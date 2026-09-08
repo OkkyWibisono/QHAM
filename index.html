@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Quantum Hamster — AI-Powered Meme Ecosystem</title>
+  <meta
+    name="description"
+    content="Quantum Hamster is an AI-powered meme ecosystem built around community, creativity and next-generation AI experiments."
+  />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #050509;
+      --bg-soft: #0b0b13;
+      --card: rgba(255, 255, 255, 0.045);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f5f5f7;
+      --muted: #9696a8;
+      --purple: #9b5cff;
+      --cyan: #45e7ff;
+      --pink: #ff4fd8;
+      --green: #68ffb0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(155, 92, 255, 0.15), transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(69, 231, 255, 0.1), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1150px, 92%);
+      margin: auto;
+    }
+
+    /* NAVBAR */
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      backdrop-filter: blur(18px);
+      background: rgba(5, 5, 9, 0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .nav-inner {
+      height: 75px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      box-shadow: 0 0 25px rgba(155,92,255,.4);
+      font-size: 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      font-size: 14px;
+      transition: .25s;
+    }
+
+    .nav-links a:hover {
+      color: white;
+    }
+
+    .nav-button {
+      padding: 10px 18px;
+      border-radius: 100px;
+      background: white;
+      color: black !important;
+      font-weight: 700;
+    }
+
+    /* HERO */
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 100px;
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: #cfcfe0;
+      background: rgba(255,255,255,.035);
+      font-size: 12px;
+      margin-bottom: 22px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    h1 {
+      font-size: clamp(52px, 7vw, 92px);
+      line-height: .95;
+      letter-spacing: -5px;
+      margin-bottom: 25px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(
+        100deg,
+        var(--purple),
+        var(--cyan),
+        var(--pink)
+      );
+      -webkit-background-clip: text;
+      color: transparent;
+      background-size: 200%;
+      animation: gradientMove 5s ease infinite;
+    }
+
+    @keyframes gradientMove {
+      0%,100% { background-position: 0%; }
+      50% { background-position: 100%; }
+    }
+
+    .hero p {
+      color: var(--muted);
+      max-width: 610px;
+      font-size: 18px;
+      margin-bottom: 32px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 13px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 13px 22px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 14px;
+      transition: .25s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), #7140d8);
+      box-shadow: 0 0 30px rgba(155,92,255,.25);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.04);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+    }
+
+    /* HAMSTER */
+
+    .hamster-stage {
+      position: relative;
+      width: 420px;
+      height: 420px;
+      margin: auto;
+      display: grid;
+      place-items: center;
+    }
+
+    .orb {
+      position: absolute;
+      width: 330px;
+      height: 330px;
+      border-radius: 50%;
+      border: 1px solid rgba(155,92,255,.4);
+      box-shadow:
+        0 0 50px rgba(155,92,255,.2),
+        inset 0 0 50px rgba(69,231,255,.08);
+      animation: rotate 14s linear infinite;
+    }
+
+    .orb::before,
+    .orb::after {
+      content: "";
+      position: absolute;
+      inset: -25px;
+      border-radius: 50%;
+      border: 1px dashed rgba(69,231,255,.25);
+    }
+
+    .orb::after {
+      inset: 25px;
+      border-color: rgba(255,79,216,.2);
+    }
+
+    @keyframes rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .quantum-hamster-logo {
+      position: relative;
+      z-index: 2;
+      width: min(520px, 100%);
+      height: auto;
+      display: block;
+      border-radius: 28px;
+      filter:
+        drop-shadow(0 0 25px rgba(155,92,255,.45))
+        drop-shadow(0 0 55px rgba(69,231,255,.22));
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .logo-icon-image {
+      width: 42px;
+      height: 42px;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 50%;
+      box-shadow: 0 0 18px rgba(155,92,255,.35);
+    }
+
+    .hamster {
+      position: relative;
+      z-index: 2;
+      font-size: 150px;
+      filter:
+        drop-shadow(0 0 25px rgba(155,92,255,.7))
+        drop-shadow(0 0 60px rgba(69,231,255,.3));
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-18px); }
+    }
+
+    .orbit-dot {
+      position: absolute;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan);
+    }
+
+    .dot-one {
+      top: 25px;
+      right: 60px;
+    }
+
+    .dot-two {
+      bottom: 50px;
+      left: 45px;
+      background: var(--pink);
+      box-shadow: 0 0 20px var(--pink);
+    }
+
+    /* SECTIONS */
+
+    section {
+      padding: 110px 0;
+    }
+
+    .section-title {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 55px;
+    }
+
+    .section-title span {
+      color: var(--cyan);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 800;
+    }
+
+    .section-title h2 {
+      font-size: clamp(34px, 5vw, 55px);
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin: 12px 0 18px;
+    }
+
+    .section-title p {
+      color: var(--muted);
+    }
+
+    /* ABOUT */
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .card {
+      padding: 30px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 20px;
+      backdrop-filter: blur(15px);
+      transition: .3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(155,92,255,.35);
+    }
+
+    .card-icon {
+      font-size: 32px;
+      margin-bottom: 18px;
+    }
+
+    .card h3 {
+      font-size: 21px;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* AI */
+
+    .ai-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .ai-card {
+      min-height: 250px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-card::after {
+      content: "";
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      right: -70px;
+      top: -70px;
+      background: var(--purple);
+      filter: blur(70px);
+      opacity: .25;
+    }
+
+    .ai-number {
+      font-family: monospace;
+      color: var(--cyan);
+      font-size: 12px;
+      margin-bottom: 35px;
+    }
+
+    /* TERMINAL */
+
+    .terminal {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #030305;
+      overflow: hidden;
+      box-shadow: 0 20px 80px rgba(0,0,0,.35);
+    }
+
+    .terminal-top {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 7px;
+    }
+
+    .terminal-top i {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #555;
+    }
+
+    .terminal-body {
+      padding: 25px;
+      font-family: monospace;
+      color: #b8b8c7;
+      font-size: 13px;
+    }
+
+    .terminal-line {
+      margin-bottom: 10px;
+    }
+
+    .green {
+      color: var(--green);
+    }
+
+    .cyan {
+      color: var(--cyan);
+    }
+
+    .purple {
+      color: var(--purple);
+    }
+
+    /* TOKENOMICS */
+
+    .token-box {
+      max-width: 850px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .token-main {
+      padding: 40px;
+      border-radius: 25px;
+      background: linear-gradient(
+        135deg,
+        rgba(155,92,255,.15),
+        rgba(69,231,255,.06)
+      );
+      border: 1px solid var(--border);
+    }
+
+    .token-symbol {
+      font-size: 60px;
+      font-weight: 900;
+      letter-spacing: -4px;
+    }
+
+    .token-name {
+      color: var(--muted);
+    }
+
+    .token-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    .token-row span:last-child {
+      color: var(--cyan);
+      font-weight: 800;
+    }
+
+    /* ROADMAP */
+
+    .roadmap {
+      position: relative;
+      max-width: 850px;
+      margin: auto;
+    }
+
+    .roadmap::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(
+        var(--purple),
+        var(--cyan),
+        transparent
+      );
+    }
+
+    .road {
+      position: relative;
+      padding-left: 60px;
+      margin-bottom: 50px;
+    }
+
+    .road-dot {
+      position: absolute;
+      left: 10px;
+      top: 5px;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 3px solid var(--cyan);
+      box-shadow: 0 0 15px var(--cyan);
+    }
+
+    .road h3 {
+      margin-bottom: 8px;
+    }
+
+    .road p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .road ul {
+      margin-top: 12px;
+      padding-left: 18px;
+      color: #aaaabb;
+      font-size: 14px;
+    }
+
+    /* COMMUNITY */
+
+    .community {
+      text-align: center;
+      padding: 90px 30px;
+      border-radius: 30px;
+      background:
+        radial-gradient(circle at center, rgba(155,92,255,.18), transparent 60%),
+        rgba(255,255,255,.025);
+      border: 1px solid var(--border);
+    }
+
+    .community h2 {
+      font-size: clamp(38px, 6vw, 65px);
+      letter-spacing: -3px;
+      margin-bottom: 18px;
+    }
+
+    .community p {
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    /* FAQ */
+
+    .faq {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    details {
+      border-bottom: 1px solid var(--border);
+      padding: 22px 0;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    summary::after {
+      content: "+";
+      color: var(--cyan);
+      font-size: 22px;
+    }
+
+    details[open] summary::after {
+      content: "−";
+    }
+
+    details p {
+      color: var(--muted);
+      margin-top: 15px;
+      font-size: 14px;
+      max-width: 700px;
+    }
+
+    /* FOOTER */
+
+    footer {
+      padding: 50px 0 30px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a:hover {
+      color: white;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 850px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .hero p {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .buttons {
+        justify-content: center;
+      }
+
+      .hamster-stage {
+        width: 320px;
+        height: 320px;
+      }
+
+      .orb {
+        width: 250px;
+        height: 250px;
+      }
+
+      .quantum-hamster-logo {
+        width: min(390px, 100%);
+        margin: 0 auto;
+      }
+
+      .hamster {
+        font-size: 110px;
+      }
+
+      .about-grid,
+      .token-box {
+        grid-template-columns: 1fr;
+      }
+
+      .ai-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        letter-spacing: -3px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVIGATION -->
+
+  <nav>
+    <div class="container nav-inner">
+
+      <a href="#" class="logo">
+        <img src="quantum-hamster-logo.png" alt="Quantum Hamster" class="logo-icon-image" />
+        Quantum Hamster
+      </a>
+
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#ai">AI</a>
+        <a href="#tokenomics">Tokenomics</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#faq">FAQ</a>
+
+        <!-- CHANGE X LINK -->
+        <a
+          href="https://x.com/"
+          target="_blank"
+          class="nav-button"
+        >
+          Join X
+        </a>
+      </div>
+
+    </div>
+  </nav>
+
+
+  <!-- HERO -->
+
+  <header class="hero">
+    <div class="container hero-grid">
+
+      <div>
+
+        <div class="badge">
+          <span class="dot"></span>
+          AI-powered meme ecosystem
+        </div>
+
+        <h1>
+          Tiny Hamster.<br>
+          <span class="gradient-text">Massive Intelligence.</span>
+        </h1>
+
+        <p>
+          Quantum Hamster is a community-driven meme ecosystem
+          exploring the intersection of artificial intelligence,
+          internet culture and decentralized technology.
+        </p>
+
+        <div class="buttons">
+
+          <a href="#about" class="btn btn-primary">
+            Explore Quantum Hamster
+          </a>
+
+          <a
+            href="https://x.com/"
+            target="_blank"
+            class="btn btn-secondary"
+          >
+            Follow on X ↗
+          </a>
+
+        </div>
+
+      </div>
+
+
+      <div class="hamster-stage">
+        <img
+          src="quantum-hamster-logo.png"
+          alt="Quantum Hamster $QHAM"
+          class="quantum-hamster-logo"
+        />
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- ABOUT -->
+
+  <section id="about">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>01 / The Vision</span>
+
+        <h2>
+          More than a meme.
+        </h2>
+
+        <p>
+          A playful experiment exploring what happens when
+          meme culture meets artificial intelligence.
+        </p>
+
+      </div>
+
+
+      <div class="about-grid">
+
+        <div class="card">
+
+          <div class="card-icon">🧠</div>
+
+          <h3>AI First</h3>
+
+          <p>
+            AI is at the center of the Quantum Hamster ecosystem.
+            From content generation to intelligent community tools,
+            the goal is to continuously experiment with useful AI.
+          </p>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-icon">⚛️</div>
+
+          <h3>Quantum Inspired</h3>
+
+          <p>
+            Quantum Hamster uses quantum-inspired ideas as part
+            of its futuristic identity. The project does not claim
+            to be a quantum computer or provide quantum computing
+            capabilities.
+          </p>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-icon">🌐</div>
+
+          <h3>Community Powered</h3>
+
+          <p>
+            The community is part of the experiment. Memes,
+            ideas, AI creations and future ecosystem features
+            can be shaped together.
+          </p>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-icon">🚀</div>
+
+          <h3>Built to Experiment</h3>
+
+          <p>
+            Quantum Hamster is designed as an evolving playground
+            for AI experiments, digital culture and decentralized
+            applications.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- AI -->
+
+  <section id="ai">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>02 / Quantum AI</span>
+
+        <h2>
+          Give the hamster a brain.
+        </h2>
+
+        <p>
+          Artificial intelligence becomes the engine behind
+          the next generation of Quantum Hamster experiments.
+        </p>
+
+      </div>
+
+
+      <div class="ai-grid">
+
+        <div class="card ai-card">
+
+          <div class="ai-number">AI-001</div>
+
+          <h3>Hamster AI Agent</h3>
+
+          <p>
+            An AI personality designed to interact with the
+            community, answer questions, generate ideas and
+            participate in the Quantum Hamster universe.
+          </p>
+
+        </div>
+
+
+        <div class="card ai-card">
+
+          <div class="ai-number">AI-002</div>
+
+          <h3>AI Meme Engine</h3>
+
+          <p>
+            Generate memes, captions and creative campaigns
+            using AI while keeping the community at the center
+            of the creative process.
+          </p>
+
+        </div>
+
+
+        <div class="card ai-card">
+
+          <div class="ai-number">AI-003</div>
+
+          <h3>Community Intelligence</h3>
+
+          <p>
+            AI-powered sentiment analysis and analytics can help
+            understand trends, discussions and community activity.
+          </p>
+
+        </div>
+
+
+        <div class="card ai-card">
+
+          <div class="ai-number">AI-004</div>
+
+          <h3>AI Content Factory</h3>
+
+          <p>
+            Automated workflows for creating images, short videos,
+            social posts and other digital content.
+          </p>
+
+        </div>
+
+
+        <div class="card ai-card">
+
+          <div class="ai-number">AI-005</div>
+
+          <h3>AI Developer Tools</h3>
+
+          <p>
+            Future APIs and tools can allow developers to build
+            applications around the Quantum Hamster AI ecosystem.
+          </p>
+
+        </div>
+
+
+        <div class="card ai-card">
+
+          <div class="ai-number">AI-006</div>
+
+          <h3>Agent Marketplace</h3>
+
+          <p>
+            A long-term vision for community-created AI agents
+            with different personalities, skills and applications.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- AI TERMINAL -->
+
+  <section>
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>03 / AI Core</span>
+
+        <h2>
+          Inside the hamster brain.
+        </h2>
+
+      </div>
+
+
+      <div class="terminal">
+
+        <div class="terminal-top">
+          <i></i>
+          <i></i>
+          <i></i>
+        </div>
+
+        <div class="terminal-body">
+
+          <div class="terminal-line">
+            <span class="green">quantum@hamster</span>:~$ initialize_ai
+          </div>
+
+          <div class="terminal-line">
+            Loading neural engine...
+          </div>
+
+          <div class="terminal-line">
+            <span class="cyan">[OK]</span>
+            Community intelligence online
+          </div>
+
+          <div class="terminal-line">
+            <span class="cyan">[OK]</span>
+            Meme generation engine online
+          </div>
+
+          <div class="terminal-line">
+            <span class="cyan">[OK]</span>
+            AI agent online
+          </div>
+
+          <div class="terminal-line">
+            <span class="purple">
+              Quantum Hamster intelligence initialized.
+            </span>
+          </div>
+
+          <div class="terminal-line">
+            <span class="green">hamster@quantum</span>:~$
+            Ready to build the future.
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- TOKENOMICS -->
+
+  <section id="tokenomics">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>04 / Token</span>
+
+        <h2>
+          Meet $QHAM.
+        </h2>
+
+        <p>
+          The community token powering the Quantum Hamster ecosystem.
+        </p>
+
+      </div>
+
+
+      <div class="token-box">
+
+        <div class="token-main">
+
+          <div class="token-symbol">$QHAM</div>
+
+          <div class="token-name">
+            Quantum Hamster
+          </div>
+
+          <br>
+
+          <p style="color:#aaaabb;">
+            A meme-driven ecosystem token designed to support
+            community participation and future AI applications.
+          </p>
+
+        </div>
+
+
+        <div class="token-list">
+
+          <div class="token-row">
+            <span>Token</span>
+            <span>QHAM</span>
+          </div>
+
+          <div class="token-row">
+            <span>Name</span>
+            <span>Quantum Hamster</span>
+          </div>
+
+          <div class="token-row">
+            <span>Type</span>
+            <span>Meme / AI</span>
+          </div>
+
+          <div class="token-row">
+            <span>Utility</span>
+            <span>AI Ecosystem</span>
+          </div>
+
+          <div class="token-row">
+            <span>Network</span>
+            <span>Coming Soon</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ROADMAP -->
+
+  <section id="roadmap">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>05 / Roadmap</span>
+
+        <h2>
+          From meme to intelligence.
+        </h2>
+
+      </div>
+
+
+      <div class="roadmap">
+
+        <div class="road">
+
+          <div class="road-dot"></div>
+
+          <h3>Phase 01 — Birth of the Hamster</h3>
+
+          <p>
+            Establish the foundation and community.
+          </p>
+
+          <ul>
+            <li>Website launch</li>
+            <li>Community launch</li>
+            <li>X presence</li>
+            <li>AI meme campaigns</li>
+            <li>Community quests</li>
+          </ul>
+
+        </div>
+
+
+        <div class="road">
+
+          <div class="road-dot"></div>
+
+          <h3>Phase 02 — Hamster Gets Smart</h3>
+
+          <p>
+            Introduce the first AI-powered experiences.
+          </p>
+
+          <ul>
+            <li>Quantum Hamster AI chatbot</li>
+            <li>AI meme generator</li>
+            <li>AI artwork experiments</li>
+            <li>Community AI agent</li>
+          </ul>
+
+        </div>
+
+
+        <div class="road">
+
+          <div class="road-dot"></div>
+
+          <h3>Phase 03 — Intelligence Network</h3>
+
+          <p>
+            Expand the ecosystem with AI infrastructure.
+          </p>
+
+          <ul>
+            <li>AI agents</li>
+            <li>Community sentiment analytics</li>
+            <li>On-chain analytics</li>
+            <li>Developer API</li>
+          </ul>
+
+        </div>
+
+
+        <div class="road">
+
+          <div class="road-dot"></div>
+
+          <h3>Phase 04 — Beyond the Cage</h3>
+
+          <p>
+            Build an open ecosystem around AI and digital culture.
+          </p>
+
+          <ul>
+            <li>AI agent marketplace</li>
+            <li>Community-built AI tools</li>
+            <li>Gaming experiments</li>
+            <li>Developer ecosystem</li>
+            <li>Global partnerships</li>
+          </ul>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- COMMUNITY -->
+
+  <section>
+
+    <div class="container">
+
+      <div class="community">
+
+        <div style="font-size:65px;margin-bottom:10px;">
+          🐹⚛️
+        </div>
+
+        <h2>
+          The hamster is awake.
+        </h2>
+
+        <p>
+          Join the community, create memes, experiment with AI
+          and help shape the Quantum Hamster universe.
+        </p>
+
+        <div class="buttons" style="justify-content:center;">
+
+          <a
+            href="https://x.com/"
+            target="_blank"
+            class="btn btn-primary"
+          >
+            Join the Community ↗
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- FAQ -->
+
+  <section id="faq">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>06 / FAQ</span>
+
+        <h2>
+          Questions?
+        </h2>
+
+      </div>
+
+
+      <div class="faq">
+
+        <details>
+          <summary>What is Quantum Hamster?</summary>
+          <p>
+            Quantum Hamster is an experimental meme ecosystem
+            focused on AI, community creativity and decentralized
+            technology.
+          </p>
+        </details>
+
+
+        <details>
+          <summary>What does $QHAM do?</summary>
+          <p>
+            $QHAM is designed as the ecosystem token for future
+            community features and AI-powered applications.
+            Specific utility and token mechanics will be announced
+            as the project develops.
+          </p>
+        </details>
+
+
+        <details>
+          <summary>Is Quantum Hamster actually quantum computing?</summary>
+          <p>
+            No. "Quantum" is part of the project's futuristic
+            identity and represents experimentation with advanced
+            technology. Quantum Hamster does not claim to operate
+            a quantum computer.
+          </p>
+        </details>
+
+
+        <details>
+          <summary>How can I contribute?</summary>
+          <p>
+            Join the community, create content, suggest ideas,
+            participate in campaigns and help experiment with
+            the AI ecosystem.
+          </p>
+        </details>
+
+
+        <details>
+          <summary>Is this financial advice?</summary>
+          <p>
+            No. Quantum Hamster is an experimental project.
+            Nothing on this website should be considered financial,
+            investment or trading advice.
+          </p>
+        </details>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- FOOTER -->
+
+  <footer>
+
+    <div class="container footer-inner">
+
+      <div>
+        © 2026 Quantum Hamster. Built for the internet.
+      </div>
+
+      <div class="footer-links">
+
+        <a href="#about">About</a>
+
+        <a href="#ai">AI</a>
+
+        <a href="#roadmap">Roadmap</a>
+
+        <a
+          href="https://x.com/"
+          target="_blank"
+        >
+          X
+        </a>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <script>
+
+    // Small scroll reveal effect
+
+    const cards = document.querySelectorAll(".card, .road");
+
+    const observer = new IntersectionObserver(
+      entries => {
+
+        entries.forEach(entry => {
+
+          if (entry.isIntersecting) {
+
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+
+          }
+
+        });
+
+      },
+      {
+        threshold: 0.1
+      }
+    );
+
+
+    cards.forEach(card => {
+
+      card.style.opacity = "0";
+      card.style.transform = "translateY(20px)";
+      card.style.transition = "opacity .7s ease, transform .7s ease";
+
+      observer.observe(card);
+
+    });
+
+  </script>
+
+</body>
+</html>
