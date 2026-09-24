@@ -1,8 +1,5 @@
-const { JsonRpcProvider, Contract, isAddress } = require("ethers");
-
-const QHAM_ADDRESS = "0xfF4Cd1e8a604CB75d8AF80B71fB5144DB9A44E42";
-const BASE_SEPOLIA_RPC_URL = "https://sepolia.base.org";
-const ERC20_ABI = ["function balanceOf(address) view returns (uint256)"];
+const { holdsQham, isAddress } = require("./_lib/gate.js");
+const { callGemini } = require("./_lib/gemini.js");
 
 const SYSTEM_PROMPT =
   "You are the Quantum Hamster AI, the witty mascot chatbot for the Quantum Hamster " +
@@ -12,13 +9,6 @@ const SYSTEM_PROMPT =
 
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_HISTORY_TURNS = 6;
-
-async function holdsQham(address) {
-  const provider = new JsonRpcProvider(BASE_SEPOLIA_RPC_URL);
-  const token = new Contract(QHAM_ADDRESS, ERC20_ABI, provider);
-  const balance = await token.balanceOf(address);
-  return balance > 0n;
-}
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -62,28 +52,18 @@ module.exports = async (req, res) => {
     : [];
 
   try {
-    const geminiRes = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" +
-        process.env.GEMINI_API_KEY,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [...safeHistory, { role: "user", parts: [{ text: message }] }]
-        })
-      }
-    );
+    const result = await callGemini(process.env.GEMINI_API_KEY, {
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [...safeHistory, { role: "user", parts: [{ text: message }] }]
+    });
 
-    const data = await geminiRes.json();
-
-    if (!geminiRes.ok) {
-      console.error("Gemini API error:", data);
+    if (!result.ok) {
+      console.error("Gemini API error:", result.data);
       res.status(502).json({ error: "The Hamster brain is unavailable right now." });
       return;
     }
 
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const reply = result.data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!reply) {
       res.status(502).json({ error: "The Hamster brain didn't say anything back." });

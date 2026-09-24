@@ -849,6 +849,7 @@
       <div class="nav-links">
         <a href="#about">About</a>
         <a href="#ai">AI</a>
+        <a href="#meme-generator">Meme Generator</a>
         <a href="#tokenomics">Tokenomics</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#faq">FAQ</a>
@@ -1188,6 +1189,63 @@
             Ready to build the future.
           </div>
 
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- MEME GENERATOR -->
+
+  <section id="meme-generator">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>AI-002</span>
+
+        <h2>
+          Meme Generator
+        </h2>
+
+        <p>
+          Give the hamster a topic, get an instant meme caption.
+        </p>
+
+      </div>
+
+
+      <div style="max-width:520px;margin:0 auto;">
+
+        <canvas
+          id="qham-meme-canvas"
+          width="500"
+          height="500"
+          style="width:100%;height:auto;border-radius:16px;border:1px solid var(--border);display:block;margin-bottom:20px;background:#050509;"
+        ></canvas>
+
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+
+          <input
+            id="qham-meme-topic"
+            type="text"
+            placeholder="e.g. gas fees, diamond hands, moon..."
+            maxlength="200"
+            style="flex:1;min-width:200px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;"
+          />
+
+          <button id="qham-meme-generate" class="btn btn-primary">Generate</button>
+
+        </div>
+
+        <div id="qham-meme-status" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;display:none;"></div>
+
+        <div style="text-align:center;">
+          <a id="qham-meme-download" class="btn btn-secondary" style="display:none;" download="qham-meme.png">Download Meme</a>
         </div>
 
       </div>
@@ -1804,6 +1862,110 @@
     chatSend.addEventListener("click", sendChatMessage);
     chatInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendChatMessage();
+    });
+
+    // --- Meme generator ---
+
+    const memeCanvas = document.getElementById("qham-meme-canvas");
+    const memeCtx = memeCanvas.getContext("2d");
+    const memeTopicInput = document.getElementById("qham-meme-topic");
+    const memeGenerateBtn = document.getElementById("qham-meme-generate");
+    const memeStatus = document.getElementById("qham-meme-status");
+    const memeDownload = document.getElementById("qham-meme-download");
+
+    const memeBaseImage = new Image();
+    memeBaseImage.src = "quantum-hamster-logo.png";
+
+    function wrapMemeText(ctx, text, maxWidth) {
+      const words = text.split(" ");
+      const lines = [];
+      let current = "";
+      words.forEach(word => {
+        const test = current ? current + " " + word : word;
+        if (ctx.measureText(test).width > maxWidth && current) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = test;
+        }
+      });
+      if (current) lines.push(current);
+      return lines;
+    }
+
+    function drawMemeText(ctx, text, x, startY, maxWidth, lineHeight, fromBottom) {
+      ctx.font = "bold 32px Impact, Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "black";
+      ctx.fillStyle = "white";
+
+      const lines = wrapMemeText(ctx, text.toUpperCase(), maxWidth);
+
+      lines.forEach((line, i) => {
+        const y = fromBottom
+          ? startY - (lines.length - 1 - i) * lineHeight
+          : startY + i * lineHeight;
+        ctx.strokeText(line, x, y);
+        ctx.fillText(line, x, y);
+      });
+    }
+
+    function renderMeme(top, bottom) {
+      const w = memeCanvas.width;
+      const h = memeCanvas.height;
+      memeCtx.clearRect(0, 0, w, h);
+      memeCtx.fillStyle = "#050509";
+      memeCtx.fillRect(0, 0, w, h);
+      memeCtx.drawImage(memeBaseImage, 0, 0, w, h);
+
+      if (top) drawMemeText(memeCtx, top, w / 2, 50, w - 40, 38, false);
+      if (bottom) drawMemeText(memeCtx, bottom, w / 2, h - 20, w - 40, 38, true);
+
+      memeDownload.href = memeCanvas.toDataURL("image/png");
+      memeDownload.style.display = "inline-block";
+    }
+
+    memeBaseImage.onload = () => renderMeme("", "");
+
+    memeGenerateBtn.addEventListener("click", async () => {
+      const topic = memeTopicInput.value.trim();
+      if (!topic) return;
+
+      if (!connectedAddress) {
+        memeStatus.style.display = "block";
+        memeStatus.textContent = "Connect a wallet holding $QHAM first (above), then try again.";
+        return;
+      }
+
+      memeGenerateBtn.disabled = true;
+      memeStatus.style.display = "block";
+      memeStatus.textContent = "Generating meme...";
+      memeDownload.style.display = "none";
+
+      try {
+        const res = await fetch("/api/meme", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address: connectedAddress, topic })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          memeStatus.textContent = data.error || "Something went wrong.";
+          return;
+        }
+
+        renderMeme(data.top, data.bottom);
+        memeStatus.style.display = "none";
+
+      } catch (err) {
+        console.error(err);
+        memeStatus.textContent = "Network error. Please try again.";
+      } finally {
+        memeGenerateBtn.disabled = false;
+      }
     });
 
     // Small scroll reveal effect
