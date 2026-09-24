@@ -2,3 +2,6 @@ node_modules/
 _devserver.js
 .vercel
 .env*
+.agents/
+.claude/
+skills-lock.json

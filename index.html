@@ -119,6 +119,30 @@
       font-weight: 700;
     }
 
+    .nav-wallet {
+      position: relative;
+    }
+
+    .nav-wallet .nav-button {
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .wallet-dropdown {
+      position: absolute;
+      top: calc(100% + 12px);
+      right: 0;
+      min-width: 240px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      text-align: left;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      z-index: 1001;
+    }
+
     /* HERO */
 
     .hero {
@@ -888,6 +912,39 @@
         </a>
       </div>
 
+      <div class="nav-wallet">
+
+        <button id="qham-connect-btn" class="nav-button">
+          Connect Wallet
+        </button>
+
+        <div id="qham-wallet-dropdown" class="wallet-dropdown" style="display:none;">
+
+          <div id="qham-wallet-info" style="font-size:13px;color:var(--muted);"></div>
+
+          <div id="qham-referral-box" style="margin-top:14px;font-size:13px;color:var(--muted);display:none;">
+            Referral points: <span id="qham-referral-points" style="color:var(--cyan);font-weight:800;">0</span>
+            (<span id="qham-referral-count">0</span> referred)
+            <br />
+            <button
+              id="qham-referral-copy"
+              style="margin-top:8px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;cursor:pointer;"
+            >
+              Copy my referral link
+            </button>
+          </div>
+
+          <button
+            id="qham-disconnect-btn"
+            style="display:none;margin-top:14px;background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;padding:0;"
+          >
+            Disconnect
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
   </nav>
 
@@ -1439,22 +1496,6 @@
       </div>
 
 
-      <div style="max-width:850px;margin:30px auto 0;text-align:center;">
-
-        <button id="qham-connect-btn" class="btn btn-primary">
-          Connect Wallet
-        </button>
-
-        <div id="qham-wallet-info" style="margin-top:16px;font-size:14px;color:var(--muted);display:none;"></div>
-
-        <button
-          id="qham-disconnect-btn"
-          style="display:none;margin-top:12px;background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;"
-        >
-          Disconnect
-        </button>
-
-      </div>
 
     </div>
 
@@ -1532,10 +1573,9 @@
           </p>
 
           <ul>
-            <li>AI agents</li>
-            <li>Community sentiment analytics</li>
-            <li>On-chain analytics</li>
-            <li>Developer API</li>
+            <li>Smarter AI agent (on-chain tool-use)</li>
+            <li>On-chain stats dashboard</li>
+            <li>Public stats API</li>
           </ul>
 
         </div>
@@ -1774,6 +1814,8 @@
     const connectBtn = document.getElementById("qham-connect-btn");
     const walletInfo = document.getElementById("qham-wallet-info");
     const disconnectBtn = document.getElementById("qham-disconnect-btn");
+    const walletDropdown = document.getElementById("qham-wallet-dropdown");
+    const navWallet = document.querySelector(".nav-wallet");
 
     let connectedAddress = null;
 
@@ -1823,28 +1865,63 @@
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
 
-        const token = new ethers.Contract(QHAM_ADDRESS, QHAM_ABI, provider);
-        const [balance, decimals, symbol] = await Promise.all([
-          token.balanceOf(address),
-          token.decimals(),
-          token.symbol()
-        ]);
-
-        const formatted = formatTokenAmount(balance, decimals);
-        const short = address.slice(0, 6) + "..." + address.slice(-4);
-
-        connectBtn.textContent = short;
-        walletInfo.style.display = "block";
-        walletInfo.innerHTML = "Balance: <span style=\"color:var(--cyan);font-weight:800;\">"
-          + formatted + " " + symbol + "</span>";
-        disconnectBtn.style.display = "inline-block";
-        connectedAddress = address;
+        await applyConnectedState(provider, address, { openDropdown: true });
 
       } catch (err) {
-        console.error(err);
         connectBtn.textContent = originalLabel;
-        walletInfo.style.display = "block";
-        walletInfo.textContent = "Connection failed. Please try again.";
+
+        const userRejected = err.code === 4001
+          || err.code === "ACTION_REJECTED"
+          || err?.info?.error?.code === 4001;
+
+        if (userRejected) {
+          walletDropdown.style.display = "block";
+          walletInfo.style.display = "block";
+          walletInfo.textContent = "Connection cancelled.";
+          setTimeout(() => { walletDropdown.style.display = "none"; }, 2000);
+        } else {
+          console.error(err);
+          walletDropdown.style.display = "block";
+          walletInfo.style.display = "block";
+          walletInfo.textContent = "Connection failed. Please try again.";
+        }
+      }
+    }
+
+    async function applyConnectedState(provider, address, { openDropdown }) {
+      const token = new ethers.Contract(QHAM_ADDRESS, QHAM_ABI, provider);
+      const [balance, decimals, symbol] = await Promise.all([
+        token.balanceOf(address),
+        token.decimals(),
+        token.symbol()
+      ]);
+
+      const formatted = formatTokenAmount(balance, decimals);
+      const short = address.slice(0, 6) + "..." + address.slice(-4);
+
+      connectBtn.textContent = short;
+      walletInfo.style.display = "block";
+      walletInfo.innerHTML = "Balance: <span style=\"color:var(--cyan);font-weight:800;\">"
+        + formatted + " " + symbol + "</span>";
+      disconnectBtn.style.display = "inline-block";
+      if (openDropdown) walletDropdown.style.display = "block";
+      connectedAddress = address;
+
+      handleReferralOnConnect(address);
+    }
+
+    async function trySilentReconnect() {
+      if (!window.ethereum) return;
+
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_accounts", []);
+
+        if (accounts.length > 0) {
+          await applyConnectedState(provider, accounts[0], { openDropdown: false });
+        }
+      } catch (err) {
+        console.warn("Silent reconnect failed:", err);
       }
     }
 
@@ -1865,11 +1942,78 @@
       walletInfo.style.display = "none";
       walletInfo.innerHTML = "";
       disconnectBtn.style.display = "none";
+      walletDropdown.style.display = "none";
       connectedAddress = null;
+      referralBox.style.display = "none";
     }
 
-    connectBtn.addEventListener("click", connectWallet);
+    connectBtn.addEventListener("click", () => {
+      if (connectedAddress) {
+        walletDropdown.style.display = walletDropdown.style.display === "none" ? "block" : "none";
+      } else {
+        connectWallet();
+      }
+    });
+
     disconnectBtn.addEventListener("click", disconnectWallet);
+
+    document.addEventListener("click", (e) => {
+      if (navWallet && !navWallet.contains(e.target)) {
+        walletDropdown.style.display = "none";
+      }
+    });
+
+    // --- Referral points ---
+
+    const referralBox = document.getElementById("qham-referral-box");
+    const referralPointsEl = document.getElementById("qham-referral-points");
+    const referralCountEl = document.getElementById("qham-referral-count");
+    const referralCopyBtn = document.getElementById("qham-referral-copy");
+
+    const referredBy = new URLSearchParams(window.location.search).get("ref");
+
+    async function refreshReferralPoints(address) {
+      try {
+        const res = await fetch("/api/points?wallet=" + encodeURIComponent(address));
+        const data = await res.json();
+        if (res.ok) {
+          referralPointsEl.textContent = data.points;
+          referralCountEl.textContent = data.referralCount;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleReferralOnConnect(address) {
+      referralBox.style.display = "block";
+
+      if (referredBy && referredBy.toLowerCase() !== address.toLowerCase()) {
+        try {
+          await fetch("/api/referral", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ wallet: address, ref: referredBy })
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      refreshReferralPoints(address);
+    }
+
+    referralCopyBtn.addEventListener("click", async () => {
+      if (!connectedAddress) return;
+      const link = window.location.origin + window.location.pathname + "?ref=" + connectedAddress;
+      try {
+        await navigator.clipboard.writeText(link);
+        referralCopyBtn.textContent = "Copied!";
+        setTimeout(() => { referralCopyBtn.textContent = "Copy my referral link"; }, 2000);
+      } catch (err) {
+        console.error(err);
+      }
+    });
 
     // --- Quantum Hamster AI chat widget ---
 
@@ -2098,6 +2242,8 @@
       observer.observe(card);
 
     });
+
+    trySilentReconnect();
 
   </script>
 
