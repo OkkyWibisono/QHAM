@@ -859,6 +859,17 @@
       text-align: center;
     }
 
+    .qham-msg.typing {
+      font-style: italic;
+      color: var(--muted);
+      animation: qhamTypingPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes qhamTypingPulse {
+      0%, 100% { opacity: .4; }
+      50% { opacity: 1; }
+    }
+
     .qham-chat-input-row {
       display: flex;
       gap: 8px;
@@ -2129,6 +2140,7 @@
       div.textContent = text;
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div;
     }
 
     chatToggle.addEventListener("click", () => {
@@ -2170,6 +2182,8 @@
       chatInput.value = "";
       chatSend.disabled = true;
 
+      const typingBubble = appendChatMessage("Generating...", "bot typing");
+
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -2183,6 +2197,8 @@
 
         const data = await res.json();
 
+        typingBubble.remove();
+
         if (!res.ok) {
           appendChatMessage(data.error || "Something went wrong.", "system");
           return;
@@ -2195,6 +2211,7 @@
 
       } catch (err) {
         console.error(err);
+        typingBubble.remove();
         appendChatMessage("Network error. Please try again.", "system");
       } finally {
         chatSend.disabled = false;
