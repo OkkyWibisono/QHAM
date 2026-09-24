@@ -1311,7 +1311,7 @@
       </div>
 
 
-      <div style="max-width:520px;margin:0 auto;">
+      <div id="qham-phase2-live-meme" style="max-width:520px;margin:0 auto;display:none;">
 
         <canvas
           id="qham-meme-canvas"
@@ -1336,6 +1336,12 @@
 
         <div id="qham-meme-status" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;display:none;"></div>
 
+      </div>
+
+      <div id="qham-phase2-soon-meme" class="card" style="max-width:520px;margin:0 auto;text-align:center;display:none;">
+        <div class="card-icon">🐹</div>
+        <h3>Coming Soon</h3>
+        <p>The meme generator is being polished up - check back soon!</p>
       </div>
 
     </div>
@@ -1364,7 +1370,7 @@
       </div>
 
 
-      <div class="artwork-grid">
+      <div id="qham-phase2-live-artwork" class="artwork-grid" style="display:none;">
 
         <img
           src="Base_Template.png"
@@ -1416,6 +1422,12 @@
 
         </div>
 
+      </div>
+
+      <div id="qham-phase2-soon-artwork" class="card" style="max-width:520px;margin:0 auto;text-align:center;display:none;">
+        <div class="card-icon">🎨</div>
+        <h3>Coming Soon</h3>
+        <p>The artwork submission contest is being set up - check back soon!</p>
       </div>
 
     </div>
@@ -2329,6 +2341,30 @@
     });
 
     trySilentReconnect();
+
+    // --- Phase 2 feature flag (Meme Generator + Artwork Submission) ---
+
+    (async () => {
+      const liveMeme = document.getElementById("qham-phase2-live-meme");
+      const soonMeme = document.getElementById("qham-phase2-soon-meme");
+      const liveArtwork = document.getElementById("qham-phase2-live-artwork");
+      const soonArtwork = document.getElementById("qham-phase2-soon-artwork");
+
+      let phase2Enabled = true;
+
+      try {
+        const res = await fetch("/api/feature-flags");
+        const data = await res.json();
+        if (res.ok && data.phase2 === false) phase2Enabled = false;
+      } catch (err) {
+        console.warn("Could not load feature flags, defaulting to enabled.", err);
+      }
+
+      liveMeme.style.display = phase2Enabled ? "block" : "none";
+      soonMeme.style.display = phase2Enabled ? "none" : "block";
+      liveArtwork.style.display = phase2Enabled ? "grid" : "none";
+      soonArtwork.style.display = phase2Enabled ? "none" : "block";
+    })();
 
   </script>
 

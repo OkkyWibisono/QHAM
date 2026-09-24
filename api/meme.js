@@ -17,6 +17,11 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (process.env.PHASE_2_ENABLED === "false") {
+    res.status(503).json({ error: "Meme Generator is not available right now." });
+    return;
+  }
+
   const { address, topic } = req.body || {};
 
   if (typeof address !== "string" || !isAddress(address)) {
