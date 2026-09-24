@@ -1570,7 +1570,10 @@
 
       <div class="qham-chat-header">
         <span>Quantum Hamster AI</span>
-        <button id="qham-chat-close">&times;</button>
+        <div>
+          <button id="qham-chat-clear" title="Clear chat" style="font-size:12px;text-decoration:underline;margin-right:10px;">Clear</button>
+          <button id="qham-chat-close">&times;</button>
+        </div>
       </div>
 
       <div id="qham-chat-messages" class="qham-chat-messages"></div>
@@ -1741,6 +1744,17 @@
 
     chatClose.addEventListener("click", () => {
       chatPanel.style.display = "none";
+    });
+
+    const chatClear = document.getElementById("qham-chat-clear");
+
+    chatClear.addEventListener("click", () => {
+      chatHistory.length = 0;
+      chatMessages.innerHTML = "";
+      appendChatMessage(
+        "Squeak! I'm the Quantum Hamster AI. Connect a wallet holding $QHAM (above) before chatting with me.",
+        "system"
+      );
     });
 
     async function sendChatMessage() {
