@@ -3,7 +3,7 @@ const { callGemini } = require("./_lib/gemini.js");
 const { getQhamStats } = require("./_lib/stats.js");
 const { getCryptoPrice } = require("./_lib/price.js");
 
-const TOOLS_ENABLED = process.env.STATS_API_ENABLED === "true";
+const TOOLS_ENABLED = process.env.PHASE_3_ENABLED === "true";
 
 const BASE_SYSTEM_PROMPT =
   "You are the Quantum Hamster AI, the witty mascot chatbot for the Quantum Hamster " +

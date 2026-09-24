@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  if (process.env.STATS_API_ENABLED !== "true") {
+  if (process.env.PHASE_3_ENABLED !== "true") {
     res.status(503).json({ error: "Stats API is not yet available." });
     return;
   }

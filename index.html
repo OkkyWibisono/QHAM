@@ -1443,13 +1443,13 @@
 
       <div class="section-title">
 
-        <span>Phase 03 · Coming Soon</span>
+        <span id="qham-phase3-label">Phase 03 · Coming Soon</span>
 
         <h2>
           Intelligence Network
         </h2>
 
-        <p>
+        <p id="qham-phase3-intro">
           Expanding the ecosystem with real AI infrastructure — not yet live,
           here's what's coming.
         </p>
@@ -1461,7 +1461,7 @@
 
         <div class="card ai-card">
 
-          <div class="ai-number">Upcoming</div>
+          <div class="ai-number qham-phase3-badge">Upcoming</div>
 
           <h3>Smarter AI Agent</h3>
 
@@ -1477,7 +1477,7 @@
 
         <div class="card ai-card">
 
-          <div class="ai-number">Upcoming</div>
+          <div class="ai-number qham-phase3-badge">Upcoming</div>
 
           <h3>On-Chain Stats Dashboard</h3>
 
@@ -1493,7 +1493,7 @@
 
         <div class="card ai-card">
 
-          <div class="ai-number">Upcoming</div>
+          <div class="ai-number qham-phase3-badge">Upcoming</div>
 
           <h3>Public Stats API</h3>
 
@@ -2349,13 +2349,18 @@
       const soonMeme = document.getElementById("qham-phase2-soon-meme");
       const liveArtwork = document.getElementById("qham-phase2-live-artwork");
       const soonArtwork = document.getElementById("qham-phase2-soon-artwork");
+      const phase3Label = document.getElementById("qham-phase3-label");
+      const phase3Intro = document.getElementById("qham-phase3-intro");
+      const phase3Badges = document.querySelectorAll(".qham-phase3-badge");
 
       let phase2Enabled = true;
+      let phase3Enabled = false;
 
       try {
         const res = await fetch("/api/feature-flags");
         const data = await res.json();
         if (res.ok && data.phase2 === false) phase2Enabled = false;
+        if (res.ok && data.phase3 === true) phase3Enabled = true;
       } catch (err) {
         console.warn("Could not load feature flags, defaulting to enabled.", err);
       }
@@ -2364,6 +2369,12 @@
       soonMeme.style.display = phase2Enabled ? "none" : "block";
       liveArtwork.style.display = phase2Enabled ? "grid" : "none";
       soonArtwork.style.display = phase2Enabled ? "none" : "block";
+
+      if (phase3Enabled) {
+        phase3Label.textContent = "Phase 03 · Live";
+        phase3Intro.textContent = "Expanding the ecosystem with real AI infrastructure — here's what's live so far.";
+        phase3Badges.forEach(badge => { badge.textContent = "Live"; });
+      }
     })();
 
   </script>
