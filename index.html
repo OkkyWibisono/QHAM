@@ -1244,10 +1244,6 @@
 
         <div id="qham-meme-status" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;display:none;"></div>
 
-        <div style="text-align:center;">
-          <a id="qham-meme-download" class="btn btn-secondary" style="display:none;" download="qham-meme.png">Download Meme</a>
-        </div>
-
       </div>
 
     </div>
@@ -1871,7 +1867,6 @@
     const memeTopicInput = document.getElementById("qham-meme-topic");
     const memeGenerateBtn = document.getElementById("qham-meme-generate");
     const memeStatus = document.getElementById("qham-meme-status");
-    const memeDownload = document.getElementById("qham-meme-download");
 
     const memeBaseImage = new Image();
     memeBaseImage.src = "quantum-hamster-logo.png";
@@ -1921,9 +1916,6 @@
 
       if (top) drawMemeText(memeCtx, top, w / 2, 50, w - 40, 38, false);
       if (bottom) drawMemeText(memeCtx, bottom, w / 2, h - 20, w - 40, 38, true);
-
-      memeDownload.href = memeCanvas.toDataURL("image/png");
-      memeDownload.style.display = "inline-block";
     }
 
     memeBaseImage.onload = () => renderMeme("", "");
@@ -1941,7 +1933,6 @@
       memeGenerateBtn.disabled = true;
       memeStatus.style.display = "block";
       memeStatus.textContent = "Generating meme...";
-      memeDownload.style.display = "none";
 
       try {
         const res = await fetch("/api/meme", {
