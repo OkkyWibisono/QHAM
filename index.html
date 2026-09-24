@@ -716,6 +716,30 @@
       }
     }
 
+    /* AI ARTWORK SUBMISSION */
+
+    .artwork-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 30px;
+      align-items: start;
+      max-width: 950px;
+      margin: auto;
+    }
+
+    .artwork-template-image {
+      width: 100%;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+    }
+
+    @media (max-width: 850px) {
+      .artwork-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* HAMSTER AI CHAT WIDGET */
 
     #qham-chat-widget {
@@ -850,6 +874,7 @@
         <a href="#about">About</a>
         <a href="#ai">AI</a>
         <a href="#meme-generator">Meme Generator</a>
+        <a href="#artwork-submission">Artwork</a>
         <a href="#tokenomics">Tokenomics</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#faq">FAQ</a>
@@ -1243,6 +1268,86 @@
         </div>
 
         <div id="qham-meme-status" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;display:none;"></div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- AI ARTWORK SUBMISSION -->
+
+  <section id="artwork-submission">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>AI-003 / Community Artwork</span>
+
+        <h2>
+          AI Artwork Submission
+        </h2>
+
+        <p>
+          Reimagine the Quantum Hamster with AI — the best entries earn $QHAM.
+        </p>
+
+      </div>
+
+
+      <div class="artwork-grid">
+
+        <img
+          src="Base_Template.png"
+          alt="Quantum Hamster base template"
+          class="artwork-template-image"
+        />
+
+        <div class="card" style="padding:40px;">
+
+          <h3 style="margin-bottom:18px;">How it works</h3>
+
+          <ol style="padding-left:20px;color:var(--muted);font-size:14px;display:grid;gap:14px;">
+
+            <li>
+              <strong style="color:var(--text);">Start from the template.</strong>
+              Download the base hamster image and reimagine it however you like —
+              new outfits, poses, styles, or backgrounds — using any AI image tool
+              you have access to (Gemini, ChatGPT, Midjourney, or anything else).
+            </li>
+
+            <li>
+              <strong style="color:var(--text);">Submit your artwork.</strong>
+              Post it on X with the hashtag <strong style="color:var(--cyan);">#QHAMArtwork</strong>
+              and tag <a href="https://x.com/QHamsterAI" target="_blank" style="color:var(--cyan);">@QHamsterAI</a>,
+              or drop it in the Discord artwork channel. Include the wallet address
+              you'd like a reward sent to if you win.
+            </li>
+
+            <li>
+              <strong style="color:var(--text);">Get picked.</strong>
+              The team reviews new submissions periodically and picks favorites
+              based on creativity, quality, and how well it fits the Quantum
+              Hamster vibe.
+            </li>
+
+            <li>
+              <strong style="color:var(--text);">Earn $QHAM.</strong>
+              Winning entries receive a $QHAM reward, sent directly to the
+              wallet address included with the submission.
+            </li>
+
+          </ol>
+
+          <p style="margin-top:22px;font-size:12px;color:var(--muted);">
+            Rewards are currently paid in testnet $QHAM on Base Sepolia as part
+            of ongoing experimentation. Nothing here is financial advice, and
+            reward mechanics may change as the project evolves.
+          </p>
+
+        </div>
 
       </div>
 
