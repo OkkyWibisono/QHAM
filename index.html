@@ -1147,10 +1147,38 @@
 
           <div class="token-row">
             <span>Network</span>
-            <span>Coming Soon</span>
+            <span>Base Sepolia (Testnet)</span>
+          </div>
+
+          <div class="token-row">
+            <span>Contract</span>
+            <span>
+              <a
+                href="https://sepolia.basescan.org/address/0xfF4Cd1e8a604CB75d8AF80B71fB5144DB9A44E42#code"
+                target="_blank"
+              >0xfF4C...4E42 ↗</a>
+            </span>
           </div>
 
         </div>
+
+      </div>
+
+
+      <div style="max-width:850px;margin:30px auto 0;text-align:center;">
+
+        <button id="qham-connect-btn" class="btn btn-primary">
+          Connect Wallet
+        </button>
+
+        <div id="qham-wallet-info" style="margin-top:16px;font-size:14px;color:var(--muted);display:none;"></div>
+
+        <button
+          id="qham-disconnect-btn"
+          style="display:none;margin-top:12px;background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;"
+        >
+          Disconnect
+        </button>
 
       </div>
 
@@ -1415,7 +1443,125 @@
   </footer>
 
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+
   <script>
+
+    // $QHAM wallet connect + live balance (Base Sepolia testnet)
+
+    const QHAM_ADDRESS = "0xfF4Cd1e8a604CB75d8AF80B71fB5144DB9A44E42";
+
+    const QHAM_ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)"
+    ];
+
+    const BASE_SEPOLIA_CHAIN_ID_HEX = "0x14a34"; // 84532
+
+    const BASE_SEPOLIA_PARAMS = {
+      chainId: BASE_SEPOLIA_CHAIN_ID_HEX,
+      chainName: "Base Sepolia",
+      nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+      rpcUrls: ["https://sepolia.base.org"],
+      blockExplorerUrls: ["https://sepolia.basescan.org"]
+    };
+
+    const connectBtn = document.getElementById("qham-connect-btn");
+    const walletInfo = document.getElementById("qham-wallet-info");
+    const disconnectBtn = document.getElementById("qham-disconnect-btn");
+
+    function formatTokenAmount(balance, decimals) {
+      const raw = ethers.formatUnits(balance, decimals);
+      const [intPart, fracPart = ""] = raw.split(".");
+      const groupedInt = new Intl.NumberFormat("en-US").format(BigInt(intPart));
+      const trimmedFrac = fracPart.replace(/0+$/, "").slice(0, 2);
+      return trimmedFrac ? groupedInt + "." + trimmedFrac : groupedInt;
+    }
+
+    async function ensureBaseSepolia() {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_SEPOLIA_CHAIN_ID_HEX }]
+        });
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [BASE_SEPOLIA_PARAMS]
+          });
+        } else {
+          throw switchError;
+        }
+      }
+    }
+
+    async function connectWallet() {
+
+      if (!window.ethereum) {
+        walletInfo.style.display = "block";
+        walletInfo.textContent = "No wallet detected. Install MetaMask to connect.";
+        return;
+      }
+
+      const originalLabel = connectBtn.textContent;
+
+      try {
+        connectBtn.textContent = "Connecting...";
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        await ensureBaseSepolia();
+
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+
+        const token = new ethers.Contract(QHAM_ADDRESS, QHAM_ABI, provider);
+        const [balance, decimals, symbol] = await Promise.all([
+          token.balanceOf(address),
+          token.decimals(),
+          token.symbol()
+        ]);
+
+        const formatted = formatTokenAmount(balance, decimals);
+        const short = address.slice(0, 6) + "..." + address.slice(-4);
+
+        connectBtn.textContent = short;
+        walletInfo.style.display = "block";
+        walletInfo.innerHTML = "Balance: <span style=\"color:var(--cyan);font-weight:800;\">"
+          + formatted + " " + symbol + "</span>";
+        disconnectBtn.style.display = "inline-block";
+
+      } catch (err) {
+        console.error(err);
+        connectBtn.textContent = originalLabel;
+        walletInfo.style.display = "block";
+        walletInfo.textContent = "Connection failed. Please try again.";
+      }
+    }
+
+    async function disconnectWallet() {
+
+      try {
+        if (window.ethereum && window.ethereum.request) {
+          await window.ethereum.request({
+            method: "wallet_revokePermissions",
+            params: [{ eth_accounts: {} }]
+          });
+        }
+      } catch (err) {
+        console.warn("Wallet does not support programmatic revoke; resetting page state only.", err);
+      }
+
+      connectBtn.textContent = "Connect Wallet";
+      walletInfo.style.display = "none";
+      walletInfo.innerHTML = "";
+      disconnectBtn.style.display = "none";
+    }
+
+    connectBtn.addEventListener("click", connectWallet);
+    disconnectBtn.addEventListener("click", disconnectWallet);
 
     // Small scroll reveal effect
 
