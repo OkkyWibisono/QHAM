@@ -119,6 +119,12 @@
       font-weight: 700;
     }
 
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
     .nav-wallet {
       position: relative;
     }
@@ -899,10 +905,12 @@
         <a href="#ai">AI</a>
         <a href="#meme-generator">Meme Generator</a>
         <a href="#artwork-submission">Artwork</a>
-        <a href="#intelligence-network">Intelligence Network</a>
         <a href="#tokenomics">Tokenomics</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#faq">FAQ</a>
+      </div>
+
+      <div class="nav-actions">
 
         <a
           href="https://x.com/QHamsterAI"
@@ -911,36 +919,37 @@
         >
           Join X
         </a>
-      </div>
 
-      <div class="nav-wallet">
+        <div class="nav-wallet">
 
-        <button id="qham-connect-btn" class="nav-button">
-          Connect Wallet
-        </button>
-
-        <div id="qham-wallet-dropdown" class="wallet-dropdown" style="display:none;">
-
-          <div id="qham-wallet-info" style="font-size:13px;color:var(--muted);"></div>
-
-          <div id="qham-referral-box" style="margin-top:14px;font-size:13px;color:var(--muted);display:none;">
-            Referral points: <span id="qham-referral-points" style="color:var(--cyan);font-weight:800;">0</span>
-            (<span id="qham-referral-count">0</span> referred)
-            <br />
-            <button
-              id="qham-referral-copy"
-              style="margin-top:8px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;cursor:pointer;"
-            >
-              Copy my referral link
-            </button>
-          </div>
-
-          <button
-            id="qham-disconnect-btn"
-            style="display:none;margin-top:14px;background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;padding:0;"
-          >
-            Disconnect
+          <button id="qham-connect-btn" class="nav-button">
+            Connect Wallet
           </button>
+
+          <div id="qham-wallet-dropdown" class="wallet-dropdown" style="display:none;">
+
+            <div id="qham-wallet-info" style="font-size:13px;color:var(--muted);"></div>
+
+            <div id="qham-referral-box" style="margin-top:14px;font-size:13px;color:var(--muted);display:none;">
+              Referral points: <span id="qham-referral-points" style="color:var(--cyan);font-weight:800;">0</span>
+              (<span id="qham-referral-count">0</span> referred)
+              <br />
+              <button
+                id="qham-referral-copy"
+                style="margin-top:8px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;cursor:pointer;"
+              >
+                Copy my referral link
+              </button>
+            </div>
+
+            <button
+              id="qham-disconnect-btn"
+              style="display:none;margin-top:14px;background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;padding:0;"
+            >
+              Disconnect
+            </button>
+
+          </div>
 
         </div>
 
