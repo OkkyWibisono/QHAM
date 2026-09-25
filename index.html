@@ -2413,6 +2413,10 @@
       liveArtwork.style.display = phase2Enabled ? "grid" : "none";
       soonArtwork.style.display = phase2Enabled ? "none" : "block";
 
+      const chatWidget = document.getElementById("qham-chat-widget");
+      if (chatWidget) chatWidget.style.display = phase2Enabled ? "block" : "none";
+      if (heroChatCta) heroChatCta.style.display = phase2Enabled ? "inline-block" : "none";
+
       if (phase3Enabled) {
         phase3Label.textContent = "Phase 03 · Live";
         phase3Intro.textContent = "Expanding the ecosystem with real AI infrastructure — here's what's live so far.";
