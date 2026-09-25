@@ -61,13 +61,19 @@ async function getQhamStats() {
   }
 
   const balances = new Map();
+  let burntAmount = 0n;
+
   for (const event of events) {
     const { from, to, value } = event.args;
 
     if (from !== ZeroAddress) {
       balances.set(from, (balances.get(from) || 0n) - value);
     }
-    balances.set(to, (balances.get(to) || 0n) + value);
+    if (to !== ZeroAddress) {
+      balances.set(to, (balances.get(to) || 0n) + value);
+    } else {
+      burntAmount += value;
+    }
   }
 
   const holders = [];
@@ -78,12 +84,22 @@ async function getQhamStats() {
   }
   holders.sort((a, b) => Number(b.balance) - Number(a.balance));
 
+  const recentTransfers = events.slice(-10).reverse().map(event => ({
+    from: event.args.from,
+    to: event.args.to,
+    amount: formatUnits(event.args.value, decimals),
+    txHash: event.transactionHash,
+    blockNumber: event.blockNumber
+  }));
+
   return {
     symbol,
     totalSupply: formatUnits(totalSupply, decimals),
+    burntAmount: formatUnits(burntAmount, decimals),
     holderCount: holders.length,
     transferCount: events.length,
-    topHolders: holders.slice(0, 10)
+    topHolders: holders.slice(0, 10),
+    recentTransfers
   };
 }
 

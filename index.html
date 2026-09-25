@@ -1609,9 +1609,19 @@
 
         </div>
 
-        <div class="card" style="padding:30px;">
+        <div class="card" style="padding:30px;margin-bottom:20px;">
           <h3 style="margin-bottom:16px;">Top Holders</h3>
           <div id="qham-stats-holders-list" style="display:grid;gap:10px;font-size:14px;color:var(--muted);">—</div>
+        </div>
+
+        <div class="card" style="padding:30px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3>Recent Transfers</h3>
+            <button id="qham-stats-refresh" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 14px;color:var(--text);font-size:12px;cursor:pointer;">
+              ↻ Refresh
+            </button>
+          </div>
+          <div id="qham-stats-transfers-list" style="display:grid;gap:10px;font-size:13px;color:var(--muted);">—</div>
         </div>
 
         <div id="qham-stats-error" style="font-size:13px;color:var(--muted);text-align:center;margin-top:16px;display:none;"></div>
@@ -2567,11 +2577,15 @@
       const statsLive = document.getElementById("qham-stats-live");
       const statsSoon = document.getElementById("qham-stats-soon");
       const statsError = document.getElementById("qham-stats-error");
+      const statsRefreshBtn = document.getElementById("qham-stats-refresh");
 
       statsLive.style.display = effectivePhase3 ? "block" : "none";
       statsSoon.style.display = effectivePhase3 ? "none" : "block";
 
-      if (effectivePhase3) {
+      async function loadStats() {
+        statsError.style.display = "none";
+        if (statsRefreshBtn) statsRefreshBtn.disabled = true;
+
         try {
           const statsRes = await fetch("/api/stats");
           const stats = await statsRes.json();
@@ -2579,29 +2593,56 @@
           if (!statsRes.ok) {
             statsError.style.display = "block";
             statsError.textContent = stats.error || "Could not load stats right now.";
-          } else {
-            document.getElementById("qham-stats-supply").textContent =
-              new Intl.NumberFormat("en-US").format(Number(stats.totalSupply)) + " " + stats.symbol;
-            document.getElementById("qham-stats-holders").textContent = stats.holderCount;
-            document.getElementById("qham-stats-transfers").textContent = stats.transferCount;
+            return;
+          }
 
-            const list = document.getElementById("qham-stats-holders-list");
-            if (stats.topHolders.length === 0) {
-              list.textContent = "No holders yet.";
-            } else {
-              list.innerHTML = stats.topHolders.map(h => {
-                const short = h.address.slice(0, 6) + "..." + h.address.slice(-4);
-                const bal = new Intl.NumberFormat("en-US").format(Number(h.balance));
-                return "<div style=\"display:flex;justify-content:space-between;\"><span>" + short
-                  + "</span><span style=\"color:var(--cyan);font-weight:700;\">" + bal + " " + stats.symbol + "</span></div>";
-              }).join("");
-            }
+          document.getElementById("qham-stats-supply").textContent =
+            new Intl.NumberFormat("en-US").format(Number(stats.totalSupply)) + " " + stats.symbol;
+          document.getElementById("qham-stats-holders").textContent = stats.holderCount;
+          document.getElementById("qham-stats-transfers").textContent = stats.transferCount;
+
+          const list = document.getElementById("qham-stats-holders-list");
+          if (stats.topHolders.length === 0) {
+            list.textContent = "No holders yet.";
+          } else {
+            list.innerHTML = stats.topHolders.map(h => {
+              const short = h.address.slice(0, 6) + "..." + h.address.slice(-4);
+              const bal = new Intl.NumberFormat("en-US").format(Number(h.balance));
+              return "<div style=\"display:flex;justify-content:space-between;\"><span>" + short
+                + "</span><span style=\"color:var(--cyan);font-weight:700;\">" + bal + " " + stats.symbol + "</span></div>";
+            }).join("");
+          }
+
+          const txList = document.getElementById("qham-stats-transfers-list");
+          if (!stats.recentTransfers || stats.recentTransfers.length === 0) {
+            txList.textContent = "No transfers yet.";
+          } else {
+            txList.innerHTML = stats.recentTransfers.map(t => {
+              const shortFrom = t.from.slice(0, 6) + "..." + t.from.slice(-4);
+              const shortTo = t.to.slice(0, 6) + "..." + t.to.slice(-4);
+              const amt = new Intl.NumberFormat("en-US").format(Number(t.amount));
+              return "<div>"
+                + "<a href=\"https://sepolia.basescan.org/tx/" + t.txHash + "\" target=\"_blank\" style=\"color:inherit;text-decoration:none;\">"
+                + "<span>" + shortFrom + " → " + shortTo + "</span>"
+                + " <span style=\"color:var(--cyan);font-weight:700;\">" + amt + " " + stats.symbol + "</span>"
+                + "</a></div>";
+            }).join("");
           }
         } catch (err) {
           console.error(err);
           statsError.style.display = "block";
           statsError.textContent = "Network error loading stats.";
+        } finally {
+          if (statsRefreshBtn) statsRefreshBtn.disabled = false;
         }
+      }
+
+      if (statsRefreshBtn) {
+        statsRefreshBtn.addEventListener("click", loadStats);
+      }
+
+      if (effectivePhase3) {
+        await loadStats();
       }
 
       const searchInput = document.getElementById("qham-stats-search-input");
