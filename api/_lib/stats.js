@@ -12,6 +12,18 @@ const ERC20_ABI = [
   "event Transfer(address indexed from, address indexed to, uint256 value)"
 ];
 
+async function queryFilterWithRetry(token, filter, from, to, retries = 3) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await token.queryFilter(filter, from, to);
+    } catch (err) {
+      const isRateLimited = err?.error?.code === -32007 || /request limit/i.test(err?.message || "");
+      if (!isRateLimited || attempt === retries) throw err;
+      await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)));
+    }
+  }
+}
+
 async function getQhamStats() {
   const provider = new JsonRpcProvider(BASE_SEPOLIA_RPC_URL);
   const token = new Contract(QHAM_ADDRESS, ERC20_ABI, provider);
@@ -23,11 +35,29 @@ async function getQhamStats() {
     provider.getBlockNumber()
   ]);
 
-  const events = [];
+  const ranges = [];
   for (let from = DEPLOY_BLOCK; from <= latestBlock; from += LOG_CHUNK_SIZE + 1) {
-    const to = Math.min(from + LOG_CHUNK_SIZE, latestBlock);
-    const chunk = await token.queryFilter(token.filters.Transfer(), from, to);
-    events.push(...chunk);
+    ranges.push([from, Math.min(from + LOG_CHUNK_SIZE, latestBlock)]);
+  }
+
+  // Fetch chunks concurrently (in small batches, with a pause between batches
+  // and retry-with-backoff on rate limiting) - sequential one-at-a-time awaits
+  // made this endpoint time out on Vercel once the chain grew past ~10 chunks
+  // worth of blocks, but the RPC's shared public tier also hard-caps at 25
+  // requests/second, so unlimited concurrency just traded one failure for
+  // another.
+  const CONCURRENCY = 8;
+  const filter = token.filters.Transfer();
+  const events = [];
+  for (let i = 0; i < ranges.length; i += CONCURRENCY) {
+    const batch = ranges.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(
+      batch.map(([from, to]) => queryFilterWithRetry(token, filter, from, to))
+    );
+    results.forEach(chunk => events.push(...chunk));
+    if (i + CONCURRENCY < ranges.length) {
+      await new Promise(resolve => setTimeout(resolve, 350));
+    }
   }
 
   const balances = new Map();
