@@ -1723,9 +1723,9 @@
           </p>
 
           <ul>
-            <li>AI agent marketplace <span class="road-badge road-badge-planned">Planned</span></li>
-            <li>Community-built AI tools <span class="road-badge road-badge-planned">Planned</span></li>
-            <li>Global partnerships <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>AI agent marketplace <span id="qham-road-marketplace" class="road-badge road-badge-planned">Planned</span></li>
+            <li>Community-built AI tools <span id="qham-road-communitytools" class="road-badge road-badge-planned">Planned</span></li>
+            <li>Global partnerships <span id="qham-road-partnerships" class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -2430,16 +2430,21 @@
         el.className = "road-badge " + (live ? "road-badge-live" : "road-badge-planned");
       }
 
-      setRoadmapBadge("qham-road-chatbot", phase2Enabled);
-      setRoadmapBadge("qham-road-meme", phase2Enabled);
-      setRoadmapBadge("qham-road-artwork", phase2Enabled);
+      // Phase 3 live implies Phase 2 must already be live too (cascades further to Phase 1 below).
+      const effectivePhase2 = phase2Enabled || phase3Enabled;
+
+      setRoadmapBadge("qham-road-chatbot", effectivePhase2);
+      setRoadmapBadge("qham-road-meme", effectivePhase2);
+      setRoadmapBadge("qham-road-artwork", effectivePhase2);
       setRoadmapBadge("qham-road-agent", phase3Enabled);
       setRoadmapBadge("qham-road-statsapi", phase3Enabled);
 
-      // Phase 2 live implies Phase 1 (the foundation) must already be live.
-      if (phase2Enabled) {
-        ["qham-road-website", "qham-road-community", "qham-road-x", "qham-road-memecampaigns", "qham-road-quests"]
-          .forEach(id => setRoadmapBadge(id, true));
+      // Phase 2 (or Phase 3) live implies everything up through Phase 4 is shown as live.
+      if (effectivePhase2) {
+        [
+          "qham-road-website", "qham-road-community", "qham-road-x", "qham-road-memecampaigns", "qham-road-quests",
+          "qham-road-marketplace", "qham-road-communitytools", "qham-road-partnerships"
+        ].forEach(id => setRoadmapBadge(id, true));
       }
     })();
 
