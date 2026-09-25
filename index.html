@@ -2155,10 +2155,27 @@
       if (openDropdown) walletDropdown.style.display = "block";
       connectedAddress = address;
 
-      faucetClaimBtn.style.display = "block";
       faucetStatus.style.display = "none";
+      checkFaucetClaimStatus(address);
 
       handleReferralOnConnect(address);
+    }
+
+    async function checkFaucetClaimStatus(address) {
+      faucetClaimBtn.style.display = "none";
+      try {
+        const res = await fetch("/api/faucet?wallet=" + encodeURIComponent(address));
+        const data = await res.json();
+        if (res.ok && data.claimed) {
+          faucetStatus.style.display = "block";
+          faucetStatus.textContent = "Already claimed testnet $QHAM.";
+        } else {
+          faucetClaimBtn.style.display = "block";
+        }
+      } catch (err) {
+        console.error(err);
+        faucetClaimBtn.style.display = "block";
+      }
     }
 
     async function refreshWalletBalance(address) {

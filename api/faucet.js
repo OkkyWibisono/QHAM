@@ -12,6 +12,24 @@ const ERC20_ABI = [
 ];
 
 module.exports = async (req, res) => {
+  if (req.method === "GET") {
+    const wallet = req.query && req.query.wallet;
+
+    if (typeof wallet !== "string" || !isAddress(wallet)) {
+      res.status(400).json({ error: "Missing or invalid wallet address" });
+      return;
+    }
+
+    try {
+      const claimed = await redis.get("faucet:" + wallet.toLowerCase());
+      res.status(200).json({ claimed: claimed !== null });
+    } catch (err) {
+      console.error("Faucet status check failed:", err);
+      res.status(502).json({ error: "Could not check claim status right now." });
+    }
+    return;
+  }
+
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
