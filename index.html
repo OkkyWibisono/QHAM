@@ -941,6 +941,7 @@
         <a href="#ai">AI</a>
         <a href="#meme-generator">Meme Generator</a>
         <a href="#artwork-submission">Artwork</a>
+        <a href="#stats-dashboard">Stats</a>
         <a href="#tokenomics">Tokenomics</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#faq">FAQ</a>
@@ -1544,6 +1545,67 @@
   </section>
 
 
+  <!-- ON-CHAIN STATS DASHBOARD -->
+
+  <section id="stats-dashboard">
+
+    <div class="container">
+
+      <div class="section-title">
+
+        <span>Phase 03</span>
+
+        <h2>
+          On-Chain Stats Dashboard
+        </h2>
+
+        <p>
+          Live $QHAM activity, straight from Base Sepolia.
+        </p>
+
+      </div>
+
+      <div id="qham-stats-live" style="max-width:800px;margin:0 auto;display:none;">
+
+        <div class="ai-grid" style="grid-template-columns:repeat(3, 1fr);margin-bottom:30px;">
+
+          <div class="card" style="text-align:center;">
+            <div class="ai-number">Total Supply</div>
+            <h3 id="qham-stats-supply">—</h3>
+          </div>
+
+          <div class="card" style="text-align:center;">
+            <div class="ai-number">Holders</div>
+            <h3 id="qham-stats-holders">—</h3>
+          </div>
+
+          <div class="card" style="text-align:center;">
+            <div class="ai-number">Transfers</div>
+            <h3 id="qham-stats-transfers">—</h3>
+          </div>
+
+        </div>
+
+        <div class="card" style="padding:30px;">
+          <h3 style="margin-bottom:16px;">Top Holders</h3>
+          <div id="qham-stats-holders-list" style="display:grid;gap:10px;font-size:14px;color:var(--muted);">—</div>
+        </div>
+
+        <div id="qham-stats-error" style="font-size:13px;color:var(--muted);text-align:center;margin-top:16px;display:none;"></div>
+
+      </div>
+
+      <div id="qham-stats-soon" class="card" style="max-width:520px;margin:0 auto;text-align:center;display:none;">
+        <div class="card-icon">📊</div>
+        <h3>Coming Soon</h3>
+        <p>The stats dashboard is being wired up - check back soon!</p>
+      </div>
+
+    </div>
+
+  </section>
+
+
   <!-- TOKENOMICS -->
 
   <section id="tokenomics">
@@ -1705,7 +1767,7 @@
 
           <ul>
             <li>Smarter AI agent (on-chain tool-use) <span id="qham-road-agent" class="road-badge road-badge-planned">Planned</span></li>
-            <li>On-chain stats dashboard <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>On-chain stats dashboard <span id="qham-road-dashboard" class="road-badge road-badge-planned">Planned</span></li>
             <li>Public stats API <span id="qham-road-statsapi" class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
@@ -2429,6 +2491,46 @@
         phase3Badges.forEach(badge => { badge.textContent = "Live"; });
       }
 
+      const statsLive = document.getElementById("qham-stats-live");
+      const statsSoon = document.getElementById("qham-stats-soon");
+      const statsError = document.getElementById("qham-stats-error");
+
+      statsLive.style.display = effectivePhase3 ? "block" : "none";
+      statsSoon.style.display = effectivePhase3 ? "none" : "block";
+
+      if (effectivePhase3) {
+        try {
+          const statsRes = await fetch("/api/stats");
+          const stats = await statsRes.json();
+
+          if (!statsRes.ok) {
+            statsError.style.display = "block";
+            statsError.textContent = stats.error || "Could not load stats right now.";
+          } else {
+            document.getElementById("qham-stats-supply").textContent =
+              new Intl.NumberFormat("en-US").format(Number(stats.totalSupply)) + " " + stats.symbol;
+            document.getElementById("qham-stats-holders").textContent = stats.holderCount;
+            document.getElementById("qham-stats-transfers").textContent = stats.transferCount;
+
+            const list = document.getElementById("qham-stats-holders-list");
+            if (stats.topHolders.length === 0) {
+              list.textContent = "No holders yet.";
+            } else {
+              list.innerHTML = stats.topHolders.map(h => {
+                const short = h.address.slice(0, 6) + "..." + h.address.slice(-4);
+                const bal = new Intl.NumberFormat("en-US").format(Number(h.balance));
+                return "<div style=\"display:flex;justify-content:space-between;\"><span>" + short
+                  + "</span><span style=\"color:var(--cyan);font-weight:700;\">" + bal + " " + stats.symbol + "</span></div>";
+              }).join("");
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          statsError.style.display = "block";
+          statsError.textContent = "Network error loading stats.";
+        }
+      }
+
       function setRoadmapBadge(id, live) {
         const el = document.getElementById(id);
         if (!el) return;
@@ -2441,6 +2543,7 @@
       setRoadmapBadge("qham-road-artwork", effectivePhase2);
       setRoadmapBadge("qham-road-agent", effectivePhase3);
       setRoadmapBadge("qham-road-statsapi", effectivePhase3);
+      setRoadmapBadge("qham-road-dashboard", effectivePhase3);
 
       // Phase 1 (foundation) is live whenever anything above it is live.
       if (effectivePhase2) {
