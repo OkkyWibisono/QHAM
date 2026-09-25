@@ -31,7 +31,7 @@
 
       /* Validated dataviz categorical palette (dark mode, checked against
          --bg #050509 - see references/palette.md in the dataviz skill) */
-      --series-1: #3987e5; /* blue - Top 10 Holders */
+      --series-1: #3987e5; /* blue - Top 5 Holders */
       --series-2: #d95926; /* orange - Other Holders */
       --series-3: #199e70; /* aqua - Liquidity */
       --series-4: #c98500; /* yellow - Burnt */
@@ -1650,7 +1650,7 @@
         </div>
 
         <div class="card" style="padding:30px;margin-bottom:20px;">
-          <h3 style="margin-bottom:16px;">Top Holders</h3>
+          <h3 style="margin-bottom:16px;">Top 5 Holders</h3>
           <div id="qham-stats-holders-list" style="display:grid;gap:10px;font-size:14px;color:var(--muted);">—</div>
         </div>
 
@@ -2749,12 +2749,12 @@
           const totalSupplyNum = Number(stats.totalSupply);
           const burntNum = Number(stats.burntAmount || "0");
           const developerNum = Number(stats.developerAmount || "0");
-          const top10Sum = stats.topHolders.reduce((sum, h) => sum + Number(h.balance), 0);
+          const top5Sum = stats.topHolders.reduce((sum, h) => sum + Number(h.balance), 0);
           const liquidityNum = 0; // no DEX pool exists yet for this testnet token
-          const otherNum = Math.max(0, totalSupplyNum - top10Sum - burntNum - developerNum - liquidityNum);
+          const otherNum = Math.max(0, totalSupplyNum - top5Sum - burntNum - developerNum - liquidityNum);
 
           const segments = [
-            { label: "Top 10 Holders", value: top10Sum, color: "var(--series-1)" },
+            { label: "Top 5 Holders", value: top5Sum, color: "var(--series-1)" },
             { label: "Other Holders", value: otherNum, color: "var(--series-2)" },
             { label: "Liquidity", value: liquidityNum, color: "var(--series-3)" },
             { label: "Burnt", value: burntNum, color: "var(--series-4)" },

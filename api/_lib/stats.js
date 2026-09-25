@@ -106,7 +106,7 @@ async function getQhamStats() {
     developerAmount: formatUnits(developerBalance, decimals),
     holderCount: holders.length,
     transferCount: events.length,
-    topHolders: holders.slice(0, 10),
+    topHolders: holders.slice(0, 5),
     recentTransfers
   };
 }
