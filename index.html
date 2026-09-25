@@ -980,6 +980,15 @@
             </div>
 
             <button
+              id="qham-faucet-claim"
+              style="display:none;margin-top:14px;width:100%;background:linear-gradient(135deg, var(--purple), var(--cyan));border:none;border-radius:8px;padding:8px 12px;color:#050509;font-weight:700;font-size:12px;cursor:pointer;"
+            >
+              Claim 1,000 testnet $QHAM
+            </button>
+
+            <div id="qham-faucet-status" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
+
+            <button
               id="qham-disconnect-btn"
               style="display:none;margin-top:14px;background:none;border:none;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;padding:0;"
             >
@@ -2007,6 +2016,8 @@
     const disconnectBtn = document.getElementById("qham-disconnect-btn");
     const walletDropdown = document.getElementById("qham-wallet-dropdown");
     const navWallet = document.querySelector(".nav-wallet");
+    const faucetClaimBtn = document.getElementById("qham-faucet-claim");
+    const faucetStatus = document.getElementById("qham-faucet-status");
 
     let connectedAddress = null;
 
@@ -2098,7 +2109,22 @@
       if (openDropdown) walletDropdown.style.display = "block";
       connectedAddress = address;
 
+      faucetClaimBtn.style.display = "block";
+      faucetStatus.style.display = "none";
+
       handleReferralOnConnect(address);
+    }
+
+    async function refreshWalletBalance(address) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const token = new ethers.Contract(QHAM_ADDRESS, QHAM_ABI, provider);
+      const [balance, decimals, symbol] = await Promise.all([
+        token.balanceOf(address),
+        token.decimals(),
+        token.symbol()
+      ]);
+      walletInfo.innerHTML = "Balance: <span style=\"color:var(--cyan);font-weight:800;\">"
+        + formatTokenAmount(balance, decimals) + " " + symbol + "</span>";
     }
 
     async function trySilentReconnect() {
@@ -2136,7 +2162,40 @@
       walletDropdown.style.display = "none";
       connectedAddress = null;
       referralBox.style.display = "none";
+      faucetClaimBtn.style.display = "none";
+      faucetStatus.style.display = "none";
     }
+
+    faucetClaimBtn.addEventListener("click", async () => {
+      if (!connectedAddress) return;
+
+      faucetClaimBtn.disabled = true;
+      faucetStatus.style.display = "block";
+      faucetStatus.textContent = "Sending 1,000 $QHAM...";
+
+      try {
+        const res = await fetch("/api/faucet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wallet: connectedAddress })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          faucetStatus.textContent = data.error || "Something went wrong.";
+          return;
+        }
+
+        faucetStatus.textContent = "Sent! +" + data.amount + " $QHAM.";
+        faucetClaimBtn.style.display = "none";
+        await refreshWalletBalance(connectedAddress);
+      } catch (err) {
+        console.error(err);
+        faucetStatus.textContent = "Network error. Please try again.";
+      } finally {
+        faucetClaimBtn.disabled = false;
+      }
+    });
 
     connectBtn.addEventListener("click", () => {
       if (connectedAddress) {
