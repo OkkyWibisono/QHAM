@@ -1576,6 +1576,20 @@
 
       <div id="qham-stats-live" style="max-width:800px;margin:0 auto;display:none;">
 
+        <div class="card" style="padding:24px;margin-bottom:20px;">
+          <h3 style="margin-bottom:14px;">Search</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input
+              id="qham-stats-search-input"
+              type="text"
+              placeholder="Wallet address or transaction hash..."
+              style="flex:1;min-width:220px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;"
+            />
+            <button id="qham-stats-search-btn" class="btn btn-primary">Search</button>
+          </div>
+          <div id="qham-stats-search-result" style="margin-top:14px;font-size:14px;color:var(--muted);display:none;"></div>
+        </div>
+
         <div class="ai-grid" style="grid-template-columns:repeat(3, 1fr);margin-bottom:30px;">
 
           <div class="card" style="text-align:center;">
@@ -2588,6 +2602,49 @@
           statsError.style.display = "block";
           statsError.textContent = "Network error loading stats.";
         }
+      }
+
+      const searchInput = document.getElementById("qham-stats-search-input");
+      const searchBtn = document.getElementById("qham-stats-search-btn");
+      const searchResult = document.getElementById("qham-stats-search-result");
+
+      async function runStatsSearch() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        searchResult.style.display = "block";
+        searchResult.textContent = "Searching...";
+
+        try {
+          if (/^0x[a-fA-F0-9]{64}$/.test(query)) {
+            searchResult.innerHTML = "Transaction: <a href=\"https://sepolia.basescan.org/tx/" + query
+              + "\" target=\"_blank\" style=\"color:var(--cyan);\">View on Basescan ↗</a>";
+          } else if (ethers.isAddress(query)) {
+            const readProvider = new ethers.JsonRpcProvider("https://sepolia.base.org");
+            const readToken = new ethers.Contract(QHAM_ADDRESS, QHAM_ABI, readProvider);
+            const [balance, decimals, symbol] = await Promise.all([
+              readToken.balanceOf(query),
+              readToken.decimals(),
+              readToken.symbol()
+            ]);
+            const formatted = formatTokenAmount(balance, decimals);
+            const short = query.slice(0, 6) + "..." + query.slice(-4);
+            searchResult.innerHTML = short + ": <span style=\"color:var(--cyan);font-weight:800;\">"
+              + formatted + " " + symbol + "</span>";
+          } else {
+            searchResult.textContent = "That doesn't look like a valid address or transaction hash.";
+          }
+        } catch (err) {
+          console.error(err);
+          searchResult.textContent = "Something went wrong searching that.";
+        }
+      }
+
+      if (searchBtn) {
+        searchBtn.addEventListener("click", runStatsSearch);
+        searchInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") runStatsSearch();
+        });
       }
 
       function setRoadmapBadge(id, live) {
