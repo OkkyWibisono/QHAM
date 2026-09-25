@@ -1684,7 +1684,7 @@
           </p>
 
           <ul>
-            <li>Quantum Hamster AI chatbot <span class="road-badge road-badge-done">✓ Done</span></li>
+            <li>Quantum Hamster AI chatbot <span id="qham-road-chatbot" class="road-badge road-badge-planned">Planned</span></li>
             <li>AI meme generator <span id="qham-road-meme" class="road-badge road-badge-planned">Planned</span></li>
             <li>AI Artwork Submission <span id="qham-road-artwork" class="road-badge road-badge-planned">Planned</span></li>
             <li>Community AI agent <span class="road-badge road-badge-planned">Planned</span></li>
@@ -2426,6 +2426,7 @@
         el.className = "road-badge " + (live ? "road-badge-live" : "road-badge-planned");
       }
 
+      setRoadmapBadge("qham-road-chatbot", phase2Enabled);
       setRoadmapBadge("qham-road-meme", phase2Enabled);
       setRoadmapBadge("qham-road-artwork", phase2Enabled);
       setRoadmapBadge("qham-road-agent", phase3Enabled);
