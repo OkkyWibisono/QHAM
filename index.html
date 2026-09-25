@@ -35,6 +35,7 @@
       --series-2: #d95926; /* orange - Other Holders */
       --series-3: #199e70; /* aqua - Liquidity */
       --series-4: #c98500; /* yellow - Burnt */
+      --series-5: #d55181; /* magenta - Developer */
     }
 
     html {
@@ -2636,15 +2637,17 @@
 
           const totalSupplyNum = Number(stats.totalSupply);
           const burntNum = Number(stats.burntAmount || "0");
+          const developerNum = Number(stats.developerAmount || "0");
           const top10Sum = stats.topHolders.reduce((sum, h) => sum + Number(h.balance), 0);
           const liquidityNum = 0; // no DEX pool exists yet for this testnet token
-          const otherNum = Math.max(0, totalSupplyNum - top10Sum - burntNum - liquidityNum);
+          const otherNum = Math.max(0, totalSupplyNum - top10Sum - burntNum - developerNum - liquidityNum);
 
           const segments = [
             { label: "Top 10 Holders", value: top10Sum, color: "var(--series-1)" },
             { label: "Other Holders", value: otherNum, color: "var(--series-2)" },
             { label: "Liquidity", value: liquidityNum, color: "var(--series-3)" },
-            { label: "Burnt", value: burntNum, color: "var(--series-4)" }
+            { label: "Burnt", value: burntNum, color: "var(--series-4)" },
+            { label: "Developer", value: developerNum, color: "var(--series-5)" }
           ];
 
           const distBar = document.getElementById("qham-distribution-bar");

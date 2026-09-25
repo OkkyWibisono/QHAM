@@ -1,6 +1,7 @@
 const { JsonRpcProvider, Contract, formatUnits, ZeroAddress } = require("ethers");
 
 const QHAM_ADDRESS = "0xfF4Cd1e8a604CB75d8AF80B71fB5144DB9A44E42";
+const DEVELOPER_WALLET = "0x623183b0aA5269bc041C874fe9640f9064A64BA1"; // 20% dev allocation, tracked separately from "holders"
 const BASE_SEPOLIA_RPC_URL = "https://sepolia.base.org";
 const DEPLOY_BLOCK = 47249579;
 const LOG_CHUNK_SIZE = 999; // Base Sepolia's public RPC caps eth_getLogs to a 1,000 block range
@@ -76,8 +77,14 @@ async function getQhamStats() {
     }
   }
 
+  const devWalletLower = DEVELOPER_WALLET.toLowerCase();
+  const developerBalance = balances.get(DEVELOPER_WALLET)
+    || [...balances.entries()].find(([addr]) => addr.toLowerCase() === devWalletLower)?.[1]
+    || 0n;
+
   const holders = [];
   for (const [address, balance] of balances) {
+    if (address.toLowerCase() === devWalletLower) continue;
     if (balance > 0n) {
       holders.push({ address, balance: formatUnits(balance, decimals) });
     }
@@ -96,6 +103,7 @@ async function getQhamStats() {
     symbol,
     totalSupply: formatUnits(totalSupply, decimals),
     burntAmount: formatUnits(burntAmount, decimals),
+    developerAmount: formatUnits(developerBalance, decimals),
     holderCount: holders.length,
     transferCount: events.length,
     topHolders: holders.slice(0, 10),
