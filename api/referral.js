@@ -1,7 +1,7 @@
 const { holdsQham, isAddress } = require("./_lib/gate.js");
 const { redis } = require("./_lib/redis.js");
 
-const REFERRAL_POINTS = 100;
+const REFERRAL_POINTS = 1000;
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {

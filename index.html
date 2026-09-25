@@ -2278,9 +2278,9 @@
         const res = await fetch("/api/points?wallet=" + encodeURIComponent(address));
         const data = await res.json();
         if (res.ok) {
-          referralPointsEl.textContent = data.referralPoints;
+          referralPointsEl.textContent = Number(data.referralPoints).toLocaleString("en-US");
           referralCountEl.textContent = data.referralCount;
-          rewardPointsEl.textContent = data.rewardPoints;
+          rewardPointsEl.textContent = Number(data.rewardPoints).toLocaleString("en-US");
         }
       } catch (err) {
         console.error(err);
