@@ -1663,11 +1663,11 @@
           </p>
 
           <ul>
-            <li>Website launch <span class="road-badge road-badge-done">✓ Done</span></li>
-            <li>Community launch <span class="road-badge road-badge-planned">Planned</span></li>
-            <li>X presence <span class="road-badge road-badge-done">✓ Done</span></li>
-            <li>AI meme campaigns <span class="road-badge road-badge-planned">Planned</span></li>
-            <li>Community quests <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>Website launch <span id="qham-road-website" class="road-badge road-badge-done">✓ Done</span></li>
+            <li>Community launch <span id="qham-road-community" class="road-badge road-badge-planned">Planned</span></li>
+            <li>X presence <span id="qham-road-x" class="road-badge road-badge-done">✓ Done</span></li>
+            <li>AI meme campaigns <span id="qham-road-memecampaigns" class="road-badge road-badge-planned">Planned</span></li>
+            <li>Community quests <span id="qham-road-quests" class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -2435,6 +2435,12 @@
       setRoadmapBadge("qham-road-artwork", phase2Enabled);
       setRoadmapBadge("qham-road-agent", phase3Enabled);
       setRoadmapBadge("qham-road-statsapi", phase3Enabled);
+
+      // Phase 2 live implies Phase 1 (the foundation) must already be live.
+      if (phase2Enabled) {
+        ["qham-road-website", "qham-road-community", "qham-road-x", "qham-road-memecampaigns", "qham-road-quests"]
+          .forEach(id => setRoadmapBadge(id, true));
+      }
     })();
 
   </script>
