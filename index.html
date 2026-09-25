@@ -602,6 +602,31 @@
       font-size: 14px;
     }
 
+    .road-badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 9px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .road-badge-done {
+      background: rgba(104,255,176,.12);
+      color: var(--green);
+    }
+
+    .road-badge-live {
+      background: rgba(69,231,255,.12);
+      color: var(--cyan);
+    }
+
+    .road-badge-planned {
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+    }
+
     /* COMMUNITY */
 
     .community {
@@ -995,16 +1020,12 @@
 
         <div class="buttons">
 
-          <a href="#about" class="btn btn-primary">
-            Explore Quantum Hamster
-          </a>
+          <button id="qham-hero-chat-cta" class="btn btn-primary">
+            🐹 Chat with Hamster AI
+          </button>
 
-          <a
-            href="https://x.com/QHamsterAI"
-            target="_blank"
-            class="btn btn-secondary"
-          >
-            Follow on X ↗
+          <a href="#about" class="btn btn-secondary">
+            Explore Quantum Hamster
           </a>
 
         </div>
@@ -1642,11 +1663,11 @@
           </p>
 
           <ul>
-            <li>Website launch</li>
-            <li>Community launch</li>
-            <li>X presence</li>
-            <li>AI meme campaigns</li>
-            <li>Community quests</li>
+            <li>Website launch <span class="road-badge road-badge-done">✓ Done</span></li>
+            <li>Community launch <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>X presence <span class="road-badge road-badge-done">✓ Done</span></li>
+            <li>AI meme campaigns <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>Community quests <span class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -1663,10 +1684,10 @@
           </p>
 
           <ul>
-            <li>Quantum Hamster AI chatbot</li>
-            <li>AI meme generator</li>
-            <li>AI Artwork Submission</li>
-            <li>Community AI agent</li>
+            <li>Quantum Hamster AI chatbot <span class="road-badge road-badge-done">✓ Done</span></li>
+            <li>AI meme generator <span id="qham-road-meme" class="road-badge road-badge-planned">Planned</span></li>
+            <li>AI Artwork Submission <span id="qham-road-artwork" class="road-badge road-badge-planned">Planned</span></li>
+            <li>Community AI agent <span class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -1683,9 +1704,9 @@
           </p>
 
           <ul>
-            <li>Smarter AI agent (on-chain tool-use)</li>
-            <li>On-chain stats dashboard</li>
-            <li>Public stats API</li>
+            <li>Smarter AI agent (on-chain tool-use) <span id="qham-road-agent" class="road-badge road-badge-planned">Planned</span></li>
+            <li>On-chain stats dashboard <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>Public stats API <span id="qham-road-statsapi" class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -1702,9 +1723,9 @@
           </p>
 
           <ul>
-            <li>AI agent marketplace</li>
-            <li>Community-built AI tools</li>
-            <li>Global partnerships</li>
+            <li>AI agent marketplace <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>Community-built AI tools <span class="road-badge road-badge-planned">Planned</span></li>
+            <li>Global partnerships <span class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -2158,6 +2179,11 @@
       chatPanel.style.display = "none";
     });
 
+    const heroChatCta = document.getElementById("qham-hero-chat-cta");
+    heroChatCta.addEventListener("click", () => {
+      chatToggle.click();
+    });
+
     const chatClear = document.getElementById("qham-chat-clear");
 
     chatClear.addEventListener("click", () => {
@@ -2392,6 +2418,18 @@
         phase3Intro.textContent = "Expanding the ecosystem with real AI infrastructure — here's what's live so far.";
         phase3Badges.forEach(badge => { badge.textContent = "Live"; });
       }
+
+      function setRoadmapBadge(id, live) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = live ? "Live" : "Planned";
+        el.className = "road-badge " + (live ? "road-badge-live" : "road-badge-planned");
+      }
+
+      setRoadmapBadge("qham-road-meme", phase2Enabled);
+      setRoadmapBadge("qham-road-artwork", phase2Enabled);
+      setRoadmapBadge("qham-road-agent", phase3Enabled);
+      setRoadmapBadge("qham-road-statsapi", phase3Enabled);
     })();
 
   </script>
