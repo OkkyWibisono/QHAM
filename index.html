@@ -996,7 +996,36 @@
                   Claim 1,000 $QHAM
                 </button>
               </div>
+
+              <div id="qham-redeem-box" style="display:none;margin-top:8px;">
+                <div style="display:flex;gap:6px;">
+                  <input
+                    id="qham-redeem-input"
+                    type="number"
+                    min="500"
+                    step="1"
+                    placeholder="Min. 500 points"
+                    style="flex:1;min-width:0;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-size:11px;"
+                  />
+                  <button
+                    id="qham-redeem-max"
+                    type="button"
+                    style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-size:11px;cursor:pointer;"
+                  >
+                    Max (<span id="qham-redeem-total">0</span>)
+                  </button>
+                </div>
+
+                <button
+                  id="qham-redeem-btn"
+                  style="margin-top:8px;width:100%;background:linear-gradient(135deg, var(--cyan), var(--purple));border:none;border-radius:8px;padding:8px 8px;color:#050509;font-weight:700;font-size:11px;cursor:pointer;"
+                >
+                  Redeem for $QHAM
+                </button>
+              </div>
             </div>
+
+            <div id="qham-redeem-status" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
 
             <div id="qham-faucet-status" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
 
@@ -2051,6 +2080,14 @@
     const navWallet = document.querySelector(".nav-wallet");
     const faucetClaimBtn = document.getElementById("qham-faucet-claim");
     const faucetStatus = document.getElementById("qham-faucet-status");
+    const redeemBox = document.getElementById("qham-redeem-box");
+    const redeemBtn = document.getElementById("qham-redeem-btn");
+    const redeemInput = document.getElementById("qham-redeem-input");
+    const redeemMaxBtn = document.getElementById("qham-redeem-max");
+    const redeemTotalEl = document.getElementById("qham-redeem-total");
+    const redeemStatus = document.getElementById("qham-redeem-status");
+    let redeemableTotal = 0;
+    const MIN_REDEEM_POINTS = 500;
 
     let connectedAddress = null;
 
@@ -2214,6 +2251,10 @@
       referralBox.style.display = "none";
       faucetClaimBtn.style.display = "none";
       faucetStatus.style.display = "none";
+      redeemBox.style.display = "none";
+      redeemStatus.style.display = "none";
+      redeemInput.value = "";
+      redeemableTotal = 0;
     }
 
     faucetClaimBtn.addEventListener("click", async () => {
@@ -2244,6 +2285,62 @@
         faucetStatus.textContent = "Network error. Please try again.";
       } finally {
         faucetClaimBtn.disabled = false;
+      }
+    });
+
+    redeemMaxBtn.addEventListener("click", () => {
+      redeemInput.value = redeemableTotal;
+    });
+
+    redeemBtn.addEventListener("click", async () => {
+      if (!connectedAddress) return;
+
+      const amount = Math.floor(Number(redeemInput.value));
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        redeemStatus.style.display = "block";
+        redeemStatus.textContent = "Enter how many points you want to redeem.";
+        return;
+      }
+
+      if (amount < MIN_REDEEM_POINTS) {
+        redeemStatus.style.display = "block";
+        redeemStatus.textContent = "Minimum redemption is " + MIN_REDEEM_POINTS.toLocaleString("en-US") + " points.";
+        return;
+      }
+
+      if (amount > redeemableTotal) {
+        redeemStatus.style.display = "block";
+        redeemStatus.textContent = "You only have " + redeemableTotal.toLocaleString("en-US") + " points available.";
+        return;
+      }
+
+      redeemBtn.disabled = true;
+      redeemStatus.style.display = "block";
+      redeemStatus.textContent = "Redeeming points...";
+
+      try {
+        const res = await fetch("/api/redeem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wallet: connectedAddress, amount })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          redeemStatus.textContent = data.error || "Something went wrong.";
+          return;
+        }
+
+        redeemStatus.textContent = "Redeemed! +" + data.qhamAmount + " $QHAM.";
+        redeemInput.value = "";
+        await refreshWalletBalance(connectedAddress);
+        await refreshReferralPoints(connectedAddress);
+      } catch (err) {
+        console.error(err);
+        redeemStatus.textContent = "Network error. Please try again.";
+      } finally {
+        redeemBtn.disabled = false;
       }
     });
 
@@ -2278,9 +2375,17 @@
         const res = await fetch("/api/points?wallet=" + encodeURIComponent(address));
         const data = await res.json();
         if (res.ok) {
-          referralPointsEl.textContent = Number(data.referralPoints).toLocaleString("en-US");
+          const referralPoints = Number(data.referralPoints) || 0;
+          const rewardPoints = Number(data.rewardPoints) || 0;
+          const totalPoints = referralPoints + rewardPoints;
+
+          referralPointsEl.textContent = referralPoints.toLocaleString("en-US");
           referralCountEl.textContent = data.referralCount;
-          rewardPointsEl.textContent = Number(data.rewardPoints).toLocaleString("en-US");
+          rewardPointsEl.textContent = rewardPoints.toLocaleString("en-US");
+
+          redeemableTotal = totalPoints;
+          redeemTotalEl.textContent = totalPoints.toLocaleString("en-US");
+          redeemBox.style.display = totalPoints >= MIN_REDEEM_POINTS ? "block" : "none";
         }
       } catch (err) {
         console.error(err);
