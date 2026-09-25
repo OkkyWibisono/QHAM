@@ -17,14 +17,16 @@ module.exports = async (req, res) => {
   const walletKey = wallet.toLowerCase();
 
   try {
-    const [points, referralCount] = await Promise.all([
+    const [referralPoints, referralCount, rewardPoints] = await Promise.all([
       redis.get("points:" + walletKey),
-      redis.scard("referrals:" + walletKey)
+      redis.scard("referrals:" + walletKey),
+      redis.get("reward-points:" + walletKey)
     ]);
 
     res.status(200).json({
-      points: Number(points) || 0,
-      referralCount: Number(referralCount) || 0
+      referralPoints: Number(referralPoints) || 0,
+      referralCount: Number(referralCount) || 0,
+      rewardPoints: Number(rewardPoints) || 0
     });
   } catch (err) {
     console.error("Points lookup failed:", err);

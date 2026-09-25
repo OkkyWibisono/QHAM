@@ -147,7 +147,7 @@
       position: absolute;
       top: calc(100% + 12px);
       right: 0;
-      min-width: 240px;
+      min-width: 300px;
       background: var(--bg-soft);
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -976,23 +976,27 @@
             <div id="qham-wallet-info" style="font-size:13px;color:var(--muted);"></div>
 
             <div id="qham-referral-box" style="margin-top:14px;font-size:13px;color:var(--muted);display:none;">
-              Referral points: <span id="qham-referral-points" style="color:var(--cyan);font-weight:800;">0</span>
-              (<span id="qham-referral-count">0</span> referred)
-              <br />
-              <button
-                id="qham-referral-copy"
-                style="margin-top:8px;width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:12px;cursor:pointer;"
-              >
-                Copy my referral link
-              </button>
-            </div>
+              <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:nowrap;">
+                <span style="white-space:nowrap;">Referral: <span id="qham-referral-points" style="color:var(--cyan);font-weight:800;">0</span> (<span id="qham-referral-count">0</span> ref)</span>
+                <span style="white-space:nowrap;">Reward: <span id="qham-reward-points" style="color:var(--cyan);font-weight:800;">0</span></span>
+              </div>
 
-            <button
-              id="qham-faucet-claim"
-              style="display:none;margin-top:14px;width:100%;background:linear-gradient(135deg, var(--purple), var(--cyan));border:none;border-radius:8px;padding:8px 12px;color:#050509;font-weight:700;font-size:12px;cursor:pointer;"
-            >
-              Claim 1,000 testnet $QHAM
-            </button>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));gap:8px;margin-top:10px;">
+                <button
+                  id="qham-referral-copy"
+                  style="width:100%;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-size:11px;cursor:pointer;"
+                >
+                  Copy my referral link
+                </button>
+
+                <button
+                  id="qham-faucet-claim"
+                  style="display:none;width:100%;background:linear-gradient(135deg, var(--purple), var(--cyan));border:none;border-radius:8px;padding:8px 8px;color:#050509;font-weight:700;font-size:11px;cursor:pointer;"
+                >
+                  Claim 1,000 $QHAM
+                </button>
+              </div>
+            </div>
 
             <div id="qham-faucet-status" style="margin-top:10px;font-size:12px;color:var(--muted);display:none;"></div>
 
@@ -1507,7 +1511,7 @@
       </div>
 
 
-      <div class="ai-grid" style="grid-template-columns:repeat(3, 1fr);">
+      <div class="ai-grid" style="grid-template-columns:repeat(2, 1fr);">
 
         <div class="card ai-card">
 
@@ -1536,21 +1540,6 @@
             pulled directly from Base Sepolia — holder count, transfer
             volume, top holders — full transparency without needing
             to dig through a block explorer.
-          </p>
-
-        </div>
-
-
-        <div class="card ai-card">
-
-          <div class="ai-number qham-phase3-badge">Upcoming</div>
-
-          <h3>Public Stats API</h3>
-
-          <p>
-            The same data behind the dashboard, opened up as a public
-            JSON endpoint so other developers can build their own
-            tools, bots, or trackers around $QHAM.
           </p>
 
         </div>
@@ -1804,7 +1793,6 @@
             <li>Quantum Hamster AI chatbot <span id="qham-road-chatbot" class="road-badge road-badge-planned">Planned</span></li>
             <li>AI meme generator <span id="qham-road-meme" class="road-badge road-badge-planned">Planned</span></li>
             <li>AI Artwork Submission <span id="qham-road-artwork" class="road-badge road-badge-planned">Planned</span></li>
-            <li>Community AI agent <span class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -1823,7 +1811,6 @@
           <ul>
             <li>Smarter AI agent (on-chain tool-use) <span id="qham-road-agent" class="road-badge road-badge-planned">Planned</span></li>
             <li>On-chain stats dashboard <span id="qham-road-dashboard" class="road-badge road-badge-planned">Planned</span></li>
-            <li>Public stats API <span id="qham-road-statsapi" class="road-badge road-badge-planned">Planned</span></li>
           </ul>
 
         </div>
@@ -2168,7 +2155,7 @@
         const data = await res.json();
         if (res.ok && data.claimed) {
           faucetStatus.style.display = "block";
-          faucetStatus.textContent = "Already claimed testnet $QHAM.";
+          faucetStatus.textContent = "Already claimed $QHAM.";
         } else {
           faucetClaimBtn.style.display = "block";
         }
@@ -2281,6 +2268,7 @@
     const referralBox = document.getElementById("qham-referral-box");
     const referralPointsEl = document.getElementById("qham-referral-points");
     const referralCountEl = document.getElementById("qham-referral-count");
+    const rewardPointsEl = document.getElementById("qham-reward-points");
     const referralCopyBtn = document.getElementById("qham-referral-copy");
 
     const referredBy = new URLSearchParams(window.location.search).get("ref");
@@ -2290,8 +2278,9 @@
         const res = await fetch("/api/points?wallet=" + encodeURIComponent(address));
         const data = await res.json();
         if (res.ok) {
-          referralPointsEl.textContent = data.points;
+          referralPointsEl.textContent = data.referralPoints;
           referralCountEl.textContent = data.referralCount;
+          rewardPointsEl.textContent = data.rewardPoints;
         }
       } catch (err) {
         console.error(err);
@@ -2772,7 +2761,6 @@
       setRoadmapBadge("qham-road-meme", effectivePhase2);
       setRoadmapBadge("qham-road-artwork", effectivePhase2);
       setRoadmapBadge("qham-road-agent", effectivePhase3);
-      setRoadmapBadge("qham-road-statsapi", effectivePhase3);
       setRoadmapBadge("qham-road-dashboard", effectivePhase3);
 
       // Phase 1 (foundation) is live whenever anything above it is live.
