@@ -28,6 +28,13 @@
       --cyan: #45e7ff;
       --pink: #ff4fd8;
       --green: #68ffb0;
+
+      /* Validated dataviz categorical palette (dark mode, checked against
+         --bg #050509 - see references/palette.md in the dataviz skill) */
+      --series-1: #3987e5; /* blue - Top 10 Holders */
+      --series-2: #d95926; /* orange - Other Holders */
+      --series-3: #199e70; /* aqua - Liquidity */
+      --series-4: #c98500; /* yellow - Burnt */
     }
 
     html {
@@ -1609,6 +1616,20 @@
 
         </div>
 
+        <div class="card viz-root" style="padding:30px;margin-bottom:20px;">
+          <h3 style="margin-bottom:6px;">Token Distribution</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:20px;">
+            How the 1B $QHAM supply is currently split.
+          </p>
+
+          <div
+            id="qham-distribution-bar"
+            style="display:flex;height:40px;border-radius:8px;overflow:hidden;background:var(--bg);gap:2px;"
+          ></div>
+
+          <div id="qham-distribution-legend" style="margin-top:18px;display:grid;gap:10px;font-size:13px;"></div>
+        </div>
+
         <div class="card" style="padding:30px;margin-bottom:20px;">
           <h3 style="margin-bottom:16px;">Top Holders</h3>
           <div id="qham-stats-holders-list" style="display:grid;gap:10px;font-size:14px;color:var(--muted);">—</div>
@@ -2612,6 +2633,38 @@
                 + "</span><span style=\"color:var(--cyan);font-weight:700;\">" + bal + " " + stats.symbol + "</span></div>";
             }).join("");
           }
+
+          const totalSupplyNum = Number(stats.totalSupply);
+          const burntNum = Number(stats.burntAmount || "0");
+          const top10Sum = stats.topHolders.reduce((sum, h) => sum + Number(h.balance), 0);
+          const liquidityNum = 0; // no DEX pool exists yet for this testnet token
+          const otherNum = Math.max(0, totalSupplyNum - top10Sum - burntNum - liquidityNum);
+
+          const segments = [
+            { label: "Top 10 Holders", value: top10Sum, color: "var(--series-1)" },
+            { label: "Other Holders", value: otherNum, color: "var(--series-2)" },
+            { label: "Liquidity", value: liquidityNum, color: "var(--series-3)" },
+            { label: "Burnt", value: burntNum, color: "var(--series-4)" }
+          ];
+
+          const distBar = document.getElementById("qham-distribution-bar");
+          const distLegend = document.getElementById("qham-distribution-legend");
+
+          distBar.innerHTML = segments.filter(s => s.value > 0).map(s => {
+            const pct = totalSupplyNum > 0 ? (s.value / totalSupplyNum) * 100 : 0;
+            return "<div title=\"" + s.label + ": " + pct.toFixed(1) + "%\" style=\"width:" + pct + "%;background:" + s.color + ";\"></div>";
+          }).join("");
+
+          distLegend.innerHTML = segments.map(s => {
+            const pct = totalSupplyNum > 0 ? (s.value / totalSupplyNum) * 100 : 0;
+            const amt = new Intl.NumberFormat("en-US").format(Math.round(s.value));
+            return "<div style=\"display:flex;align-items:center;gap:8px;\">"
+              + "<span style=\"width:10px;height:10px;border-radius:3px;background:" + s.color + ";flex-shrink:0;\"></span>"
+              + "<span style=\"color:var(--text);\">" + s.label + "</span>"
+              + "<span style=\"margin-left:auto;color:var(--muted);\">" + amt + " " + stats.symbol
+              + " · <strong style=\"color:var(--text);\">" + pct.toFixed(1) + "%</strong></span>"
+              + "</div>";
+          }).join("");
 
           const txList = document.getElementById("qham-stats-transfers-list");
           if (!stats.recentTransfers || stats.recentTransfers.length === 0) {
