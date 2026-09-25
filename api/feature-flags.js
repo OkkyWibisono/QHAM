@@ -6,6 +6,7 @@ module.exports = async (req, res) => {
 
   res.status(200).json({
     phase2: process.env.PHASE_2_ENABLED !== "false",
-    phase3: process.env.PHASE_3_ENABLED === "true"
+    phase3: process.env.PHASE_3_ENABLED === "true",
+    phase4: process.env.PHASE_4_ENABLED === "true"
   });
 };

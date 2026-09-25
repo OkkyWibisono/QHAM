@@ -2398,12 +2398,14 @@
 
       let phase2Enabled = true;
       let phase3Enabled = false;
+      let phase4Enabled = false;
 
       try {
         const res = await fetch("/api/feature-flags");
         const data = await res.json();
         if (res.ok && data.phase2 === false) phase2Enabled = false;
         if (res.ok && data.phase3 === true) phase3Enabled = true;
+        if (res.ok && data.phase4 === true) phase4Enabled = true;
       } catch (err) {
         console.warn("Could not load feature flags, defaulting to enabled.", err);
       }
@@ -2417,7 +2419,11 @@
       if (chatWidget) chatWidget.style.display = phase2Enabled ? "block" : "none";
       if (heroChatCta) heroChatCta.style.display = phase2Enabled ? "inline-block" : "none";
 
-      if (phase3Enabled) {
+      // Cascade: a higher phase being live implies every phase below it is live too.
+      const effectivePhase3 = phase3Enabled || phase4Enabled;
+      const effectivePhase2 = phase2Enabled || effectivePhase3;
+
+      if (effectivePhase3) {
         phase3Label.textContent = "Phase 03 · Live";
         phase3Intro.textContent = "Expanding the ecosystem with real AI infrastructure — here's what's live so far.";
         phase3Badges.forEach(badge => { badge.textContent = "Live"; });
@@ -2430,21 +2436,22 @@
         el.className = "road-badge " + (live ? "road-badge-live" : "road-badge-planned");
       }
 
-      // Phase 3 live implies Phase 2 must already be live too (cascades further to Phase 1 below).
-      const effectivePhase2 = phase2Enabled || phase3Enabled;
-
       setRoadmapBadge("qham-road-chatbot", effectivePhase2);
       setRoadmapBadge("qham-road-meme", effectivePhase2);
       setRoadmapBadge("qham-road-artwork", effectivePhase2);
-      setRoadmapBadge("qham-road-agent", phase3Enabled);
-      setRoadmapBadge("qham-road-statsapi", phase3Enabled);
+      setRoadmapBadge("qham-road-agent", effectivePhase3);
+      setRoadmapBadge("qham-road-statsapi", effectivePhase3);
 
-      // Phase 2 (or Phase 3) live implies everything up through Phase 4 is shown as live.
+      // Phase 1 (foundation) is live whenever anything above it is live.
       if (effectivePhase2) {
-        [
-          "qham-road-website", "qham-road-community", "qham-road-x", "qham-road-memecampaigns", "qham-road-quests",
-          "qham-road-marketplace", "qham-road-communitytools", "qham-road-partnerships"
-        ].forEach(id => setRoadmapBadge(id, true));
+        ["qham-road-website", "qham-road-community", "qham-road-x", "qham-road-memecampaigns", "qham-road-quests"]
+          .forEach(id => setRoadmapBadge(id, true));
+      }
+
+      // Phase 4 only goes live from its own flag - it does not cascade down from Phase 2/3.
+      if (phase4Enabled) {
+        ["qham-road-marketplace", "qham-road-communitytools", "qham-road-partnerships"]
+          .forEach(id => setRoadmapBadge(id, true));
       }
     })();
 
